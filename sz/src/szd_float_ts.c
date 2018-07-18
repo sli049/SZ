@@ -64,7 +64,8 @@ void decompressDataSeries_float_1D_ts(float** data, size_t dataSeriesLength, sz_
 
 	if(cmpSize == byteLength_tmp - sizeof(size_t) - sizeof(unsigned long))
 		printf("the two zlib compuression size match\n");
-	else("the two zlib compression size DON'T match\n");
+	else
+		printf("the two zlib compression size DON'T match\n");
 
 	unsigned char* dec_bit_arr = (unsigned char*) malloc(sizeof(unsigned char) * oriSize);
 	zlib_uncompress(bit_read, cmpSize, &dec_bit_arr, oriSize);
@@ -214,7 +215,8 @@ void decompressDataSeries_float_1D_ts_vlct(float** data, size_t dataSeriesLength
 
 	if(cmpSize == byteLength_tmp - sizeof(size_t) - sizeof(unsigned long))
 		printf("the two zlib compuression size match\n");
-	else("the two zlib compression size DON'T match\n");
+	else
+		printf("the two zlib compression size DON'T match\n");
 
 	unsigned char* dec_bit_arr = (unsigned char*) malloc(sizeof(unsigned char) * oriSize);
 	zlib_uncompress(bit_read, cmpSize, &dec_bit_arr, oriSize);
