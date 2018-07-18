@@ -281,7 +281,12 @@ typedef struct sz_tsc_metainfo
 	int currentStep;
 	char metadata_filename[256];
 	FILE *metadata_file;
+	unsigned char* bit_array; //sihuan added
+	size_t intersect_size; //sihuan added
+	int64_t* hist_index; //sihuan added: prestep index 
 } sz_tsc_metadata;
+
+extern float delta_t_opt[5]; //sihuan added
 
 extern int versionNumber[4];
 
@@ -298,6 +303,8 @@ extern int sz_with_regression;
 extern SZ_VarSet* sz_varset;
 extern sz_multisteps *multisteps; //compression based on multiple time steps (time-dimension based compression)
 extern sz_tsc_metadata *sz_tsc;
+extern SZ_Variable* v_global; //sihuan added
+extern int TheCurVarNum;
 
 //for pastri 
 #ifdef PASTRI
@@ -370,7 +377,10 @@ int SZ_deregisterVar(char* varName);
 int SZ_deregisterAllVars();
 
 int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
+int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize);//sihuan added
+
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
+void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength);//sihuan added
 
 void SZ_Finalize();
 

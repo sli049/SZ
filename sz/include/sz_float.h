@@ -33,12 +33,17 @@ unsigned int optimize_intervals_float_1D_opt(float *oriData, size_t dataLength, 
 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ(float *oriData, 
 size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f);
+TightDataPointStorageF* SZ_compress_float_1D_MDQ_ps(float *oriData, 
+size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f, int phase);//sihuan added
 
 void SZ_compress_args_float_StoreOriData(float* oriData, size_t dataLength, TightDataPointStorageF* tdps, 
 unsigned char** newByteData, size_t *outSize);
 
 char SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, 
 size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f);
+
+char SZ_compress_args_float_NoCkRngeNoGzip_1D_ps(unsigned char** newByteData, float *oriData, 
+size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f, int phase);//sihuan update: phase 1 and 2
 
 TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size_t r2, double realPrecision, float valueRangeSize, float medianValue_f);
 
@@ -93,6 +98,9 @@ int SZ_compress_args_float(unsigned char** newByteData, float *oriData,
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio);
 
+int SZ_compress_args_float_ps(unsigned char** newByteData, float *oriData, 
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
+int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio, int partial, int phase); //sihuan updated: add partial
 int SZ_compress_args_float_subblock(unsigned char* compressedBytes, float *oriData,
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
 size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
