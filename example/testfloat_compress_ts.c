@@ -18,6 +18,8 @@ struct timeval endTime;  /* Start and end times */
 struct timeval costStart; /*only used for recording the cost*/
 double totalCost = 0;
 
+#define NB_variable 6
+
 
 void cost_start()
 {
@@ -41,6 +43,8 @@ int main(int argc, char * argv[])
     size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char oriDir[640], outputDir[640], outputFilePath[600];
     char *cfgFile;
+    float eb = 0.001;
+    float eb2 = 0.01;
     
     if(argc < 3)
     {
@@ -50,13 +54,15 @@ int main(int argc, char * argv[])
     }
    
     cfgFile=argv[1];
-    sprintf(oriDir, "%s", argv[2]);
+    sprintf(oriDir, "%s", argv[2]);//add a comment to test github
     if(argc>=4)
 		r1 = atoi(argv[3]); //8
     if(argc>=5)
-		r2 = atoi(argv[4]); //8
+		//r2 = atoi(argv[4]); //8
+        eb = atof(argv[4]);
     if(argc>=6)
-		r3 = atoi(argv[5]); //128
+		//r3 = atoi(argv[5]); //128
+        eb2 = atof(argv[5]);
     if(argc>=7)
         r4 = atoi(argv[6]);
     if(argc>=8)
@@ -71,33 +77,69 @@ int main(int argc, char * argv[])
     char oriFilePath[600];
     size_t nbEle;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
-    float *data = (float*)malloc(sizeof(float)*dataLength);
-    SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    //float *data = (float*)malloc(sizeof(float)*dataLength);
+    float **data = (float**) malloc(NB_variable * sizeof(float*));
+    for (i = 0; i < NB_variable; i++){
+        data[i] = (float*) malloc(dataLength * sizeof(float));
+    }
+    int64_t* index = (int64_t*) malloc(dataLength * sizeof(int64_t));
+    //SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+
+    SZ_registerVar("x", SZ_FLOAT, data[0], REL, 0, eb, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("y", SZ_FLOAT, data[1], REL, 0, eb, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("z", SZ_FLOAT, data[2], REL, 0, eb, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("vx", SZ_FLOAT, data[3], PW_REL, 0, 0, eb2, r5, r4, r3, r2, r1);
+    SZ_registerVar("vy", SZ_FLOAT, data[4], PW_REL, 0, 0, eb2, r5, r4, r3, r2, r1);
+    SZ_registerVar("vz", SZ_FLOAT, data[5], PW_REL, 0, 0, eb2, r5, r4, r3, r2, r1);
+    //SZ_registerVar("vx", SZ_FLOAT, data[3], REL, 0, eb2, 0, r5, r4, r3, r2, r1);
+    //SZ_registerVar("vy", SZ_FLOAT, data[4], REL, 0, eb2, 0, r5, r4, r3, r2, r1);
+    //SZ_registerVar("vz", SZ_FLOAT, data[5], REL, 0, eb2, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("index", SZ_INT64, index, REL, 0, eb, 0, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {
 		printf("Error: data file %s cannot be read!\n", oriFilePath);
 		exit(0);
     }
+
+    int file_num[6] = {100, 102, 105, 107, 110, 113};
    
     size_t outSize; 
     unsigned char *bytes = NULL;
-    for(i=1;i<20;i++)
+    for(i=0;i<6;i++)
 	{
 		printf("simulation time step %d\n", i);
-		sprintf(oriFilePath, "%s/QCLOUDf%02d.bin.dat", oriDir, i);
-		float *data_ = readFloatData(oriFilePath, &nbEle, &status);
-		memcpy(data, data_, nbEle*sizeof(float));
+        int m = 0;
+        for (m = 0; m < NB_variable; m++){
+            sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#21-%d.dat", oriDir, file_num[i], m);
+            float* data_ = readFloatData(oriFilePath, &nbEle, &status);
+            memcpy(data[m], data_, nbEle*sizeof(float));
+            free(data_);
+        }
+        sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#21-i.dat", oriDir, file_num[i]);
+        int64_t* index_ = readInt64Data(oriFilePath, &nbEle, &status);
+        memcpy(index, index_, nbEle*sizeof(int64_t));
+        //printf("--------------- %lld \n", index_[0]);
+		//float *data_ = readFloatData(oriFilePath, &nbEle, &status);
+		//memcpy(data, data_, nbEle*sizeof(float));
 		cost_start();
-		SZ_compress_ts(&bytes, &outSize);
+		SZ_compress_ts_vlct(&bytes, &outSize);
 		cost_end();
 		printf("timecost=%f\n",totalCost); 
 		sprintf(outputFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);
 		printf("writing compressed data to %s\n", outputFilePath);
 		writeByteData(bytes, outSize, outputFilePath, &status); 
 		free(bytes);
-		free(data_);
+		//free(data_);
 	}
+    sprintf(outputFilePath, "%s/delta_t_opt_output.txt", outputDir);
+    writeFloatData(delta_t_opt, 5, outputFilePath, &status);
+
+    float overall_cmp_ratio = 0.0;
+    for (i = 0; i < 6; i++){
+        overall_cmp_ratio+=1.0/cmp_ratio[i];
+    }
+    printf("The overall compration for 6 steps is: %.5f\n", 6.0/overall_cmp_ratio);
     
     printf("done\n");
     free(data);

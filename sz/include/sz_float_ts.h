@@ -18,6 +18,11 @@ unsigned int optimize_intervals_float_1D_ts(float *oriData, size_t dataLength, f
 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ_ts(float *oriData, size_t dataLength, sz_multisteps* multisteps,
 double realPrecision, float valueRangeSize, float medianValue_f);
+TightDataPointStorageF* SZ_compress_float_1D_MDQ_ts_hist_invlog(float *oriData, size_t dataLength, sz_multisteps* multisteps,
+double realPrecision, float valueRangeSize, float medianValue_f, unsigned char* signs, float threshold);//sihuan added
+
+TightDataPointStorageF* SZ_compress_float_1D_MDQ_ts_pwr_vlct(float *oriData, size_t dataLength, sz_multisteps* multisteps,
+double realPrecision, float valueRangeSize, float medianValue_f, unsigned char* signs); //sihuan added
 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ_ts_vlct(float *oriData, size_t dataLength, sz_multisteps* multisteps,
 double realPrecision, float valueRangeSize, float medianValue_f);//sihuan added, in this, v is used to predict x more accurately

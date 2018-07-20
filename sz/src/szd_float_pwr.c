@@ -1370,6 +1370,72 @@ void decompressDataSeries_float_1D_pwr_pre_log(float** data, size_t dataSeriesLe
 			else (*data)[i] = exp2((*data)[i]);
 		}
 	}
+}
+
+
+void decompressDataSeries_float_1D_pwr_pre_log_hist_invlog(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps) {
+
+	decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
+	float threshold = tdps->minLogValue;
+	if(tdps->pwrErrBoundBytes_size > 0){
+		unsigned char * signs;
+		zlib_uncompress5(tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+			if(signs[i]) (*data)[i] = -((*data)[i]);
+		}
+		free(signs);
+	}
+	else{
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+		}
+	}
+	if (vlct == 1){
+		memcpy(multisteps->hist_invlog_data, (*data), dataSeriesLength*sizeof(float));//only for vlct == 1;
+		printf("Snapshot: history the inv log data to hist_invlog_data.\n");
+		printf("so, use it directly to decompress position; use its log data (hist_data) to decompress velocity.\n");
+	}
+}
+
+
+void decompressDataSeries_float_1D_pwr_pre_log_ts(float** data, size_t dataSeriesLength, sz_multisteps* multisteps, TightDataPointStorageF* tdps) {
+
+#if 0
+	if (vlct == 1){
+		float* hist = (float*) multisteps->hist_data;
+		printf("log the data before decompression for velocity\n");
+		for (size_t i = 0; i < dataSeriesLength; i++){
+			if (fabs(hist[i])>0)
+			hist[i] = log2(fabs(hist[i]));
+		}
+	}
+#endif
+	decompressDataSeries_float_1D_ts(data, dataSeriesLength, multisteps, tdps);
+	float threshold = tdps->minLogValue;
+	if(tdps->pwrErrBoundBytes_size > 0){
+		unsigned char * signs;
+		zlib_uncompress5(tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+			if(signs[i]) (*data)[i] = -((*data)[i]);
+		}
+		free(signs);
+	}
+	else{
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+		}
+	}
+	if (vlct == 1){
+		memcpy(multisteps->hist_invlog_data, (*data), dataSeriesLength*sizeof(float));//only for vlct == 1;
+		printf("Time-based: history the inv log data to hist_invlog_data.\n");
+		printf("so, use it directly to decompress position; use its log data to decompress velocity.\n");
+	}
 
 }
 

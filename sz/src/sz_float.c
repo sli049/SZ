@@ -490,6 +490,196 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 	return tdps;
 }
 
+TightDataPointStorageF* SZ_compress_float_1D_MDQ_hist_invlog(float *oriData, 
+size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f, unsigned char* signs, float threshold)
+{
+#ifdef HAVE_TIMECMPR	
+	float* decData = NULL;
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData = (float*)(multisteps->hist_data);
+#endif	
+	
+	unsigned int quantization_intervals;
+	if(exe_params->optQuantMode==1)
+		quantization_intervals = optimize_intervals_float_1D_opt(oriData, dataLength, realPrecision);
+	else
+		quantization_intervals = exe_params->intvCapacity;
+	updateQuantizationInfo(quantization_intervals);	
+
+	size_t i;
+	int reqLength;
+	float medianValue = medianValue_f;
+	short radExpo = getExponent_float(valueRangeSize/2);
+	//float threshold = -127.0 - 1.0001*realPrecision;
+	
+	computeReqLength_float(realPrecision, radExpo, &reqLength, &medianValue);	
+
+	int* type = (int*) malloc(dataLength*sizeof(int));
+		
+	float* spaceFillingValue = oriData; //
+	
+	DynamicIntArray *exactLeadNumArray;
+	new_DIA(&exactLeadNumArray, DynArrayInitLen);
+	
+	DynamicByteArray *exactMidByteArray;
+	new_DBA(&exactMidByteArray, DynArrayInitLen);
+	
+	DynamicIntArray *resiBitArray;
+	new_DIA(&resiBitArray, DynArrayInitLen);
+	
+	unsigned char preDataBytes[4];
+	intToBytes_bigEndian(preDataBytes, 0);
+	
+	int reqBytesLength = reqLength/8;
+	int resiBitsLength = reqLength%8;
+	float last3CmprsData[3] = {0};
+
+	FloatValueCompressElement *vce = (FloatValueCompressElement*)malloc(sizeof(FloatValueCompressElement));
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
+				
+	//add the first data	
+	type[0] = 0;
+	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+	memcpy(preDataBytes,vce->curBytes,4);
+	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	listAdd_float(last3CmprsData, vce->data);
+#ifdef HAVE_TIMECMPR	
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION){
+		decData[0] = vce->data;
+			if (decData[0] < threshold) decData[0] = 0;
+			else decData[0] = exp2(decData[0]);
+			if (signs[0]) decData[0] = -decData[0];
+	}
+#endif		
+		
+	//add the second data
+	type[1] = 0;
+	compressSingleFloatValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+	memcpy(preDataBytes,vce->curBytes,4);
+	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	listAdd_float(last3CmprsData, vce->data);
+#ifdef HAVE_TIMECMPR	
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION){
+		decData[1] = vce->data;
+			if (decData[1] < threshold) decData[1] = 0;
+			else decData[1] = exp2(decData[1]);
+			if (signs[1]) decData[1] = -decData[1];
+	}
+#endif
+	int state;
+	double checkRadius;
+	float curData;
+	float pred;
+	float predAbsErr;
+	checkRadius = (exe_params->intvCapacity-1)*realPrecision;
+	double interval = 2*realPrecision;
+	
+	for(i=2;i<dataLength;i++)
+	{	
+		curData = spaceFillingValue[i];
+		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
+		pred = last3CmprsData[0];
+		predAbsErr = fabs(curData - pred);	
+		if(predAbsErr<=checkRadius)
+		{
+			state = (predAbsErr/realPrecision+1)/2;
+			if(curData>=pred)
+			{
+				type[i] = exe_params->intvRadius+state;
+				pred = pred + state*interval;
+			}
+			else //curData<pred
+			{
+				type[i] = exe_params->intvRadius-state;
+				pred = pred - state*interval;
+			}
+				
+			//double-check the prediction error in case of machine-epsilon impact	
+			if(fabs(curData-pred)>realPrecision)
+			{	
+				type[i] = 0;				
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,4);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);		
+				
+				listAdd_float(last3CmprsData, vce->data);	
+#ifdef HAVE_TIMECMPR					
+				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION){
+					decData[i] = vce->data;
+						if (decData[i] < threshold) decData[i] = 0;
+						else decData[i] = exp2(decData[i]);
+						if (signs[i]) decData[i] = -decData[i];
+				}
+
+#endif					
+			}
+			else
+			{
+				listAdd_float(last3CmprsData, pred);
+#ifdef HAVE_TIMECMPR					
+				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION){
+					decData[i] = pred;
+						if (decData[i] < threshold) decData[i] = 0;
+						else decData[i] = exp2(decData[i]);
+						if (signs[i]) decData[i] = -decData[i];
+				}
+#endif	
+			}	
+			continue;
+		}
+		
+		//unpredictable data processing		
+		type[i] = 0;		
+		compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+		memcpy(preDataBytes,vce->curBytes,4);
+		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+
+		listAdd_float(last3CmprsData, vce->data);
+#ifdef HAVE_TIMECMPR
+		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION){
+			decData[i] = vce->data;
+				if (decData[i] < threshold) decData[i] = 0;
+				else decData[i] = exp2(decData[i]);
+				if (signs[i]) decData[i] = -decData[i];
+		}
+#endif	
+		
+	}//end of for
+		
+//	char* expSegmentsInBytes;
+//	int expSegmentsInBytes_size = convertESCToBytes(esc, &expSegmentsInBytes);
+	size_t exactDataNum = exactLeadNumArray->size;
+	
+	TightDataPointStorageF* tdps;
+			
+	new_TightDataPointStorageF(&tdps, dataLength, exactDataNum, 
+			type, exactMidByteArray->array, exactMidByteArray->size,  
+			exactLeadNumArray->array,  
+			resiBitArray->array, resiBitArray->size, 
+			resiBitsLength,
+			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
+
+//sdi:Debug
+/*	int sum =0;
+	for(i=0;i<dataLength;i++)
+		if(type[i]==0) sum++;
+	printf("opt_quantizations=%d, exactDataNum=%d, sum=%d\n",quantization_intervals, exactDataNum, sum);*/
+	
+	//free memory
+	free_DIA(exactLeadNumArray);
+	free_DIA(resiBitArray);
+	free(type);	
+	free(vce);
+	free(lce);	
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+	
+	return tdps;
+}
+
 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ_ps(float *oriData, 
 size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f, int phase)
@@ -742,10 +932,17 @@ size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, 
 		//if(timestep % confparams_cpr->snapshotCmprStep != 0 && phase == 1)//sihuan changed
 		if(phase == 1)
 		{
-			if (TheCurVarNum >= 3) //this should be varied with the total number of variables
+			if (vlct != 1){
+			//if (TheCurVarNum >= 0) //this should be varied with the total number of variables
 				tdps = SZ_compress_float_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_f);
 			//compressionType = 1; //time-series based compression
-			else tdps = SZ_compress_float_1D_MDQ_ts_vlct(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_f);
+			//else tdps = SZ_compress_float_1D_MDQ_ts_vlct(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_f);
+		}
+			if(vlct == 1){
+				if (TheCurVarNum >= 3)
+					tdps = SZ_compress_float_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_f);
+				else tdps = SZ_compress_float_1D_MDQ_ts_vlct(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_f);
+			}
 		}
 		if(phase == 2)
 		{	
@@ -2061,8 +2258,10 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
 			{
+				if (vlct == 0)
 				SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r1, &tmpOutSize, min, max);
 				//SZ_compress_args_float_NoCkRngeNoGzip_1D_pwrgroup(&tmpByteData, oriData, r1, absErr_Bound, relBoundRatio, pwRelBoundRatio, valueRangeSize, medianValue, &tmpOutSize);
+				else SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log_vlct(&tmpByteData, oriData, pwRelBoundRatio, r1, &tmpOutSize, min, max);
 			}
 			else
 #ifdef HAVE_TIMECMPR
@@ -2214,13 +2413,18 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
 			{
-				SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r1, &tmpOutSize, min, max);
+				printf("entering PW_REL; phase: %d\n", phase);
+				if (phase == 1)
+					SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log_ps(&tmpByteData, oriData, pwRelBoundRatio, sz_tsc->intersect_size, &tmpOutSize, min, max, 1);
 				//SZ_compress_args_float_NoCkRngeNoGzip_1D_pwrgroup(&tmpByteData, oriData, r1, absErr_Bound, relBoundRatio, pwRelBoundRatio, valueRangeSize, medianValue, &tmpOutSize);
+				if (phase == 2)
+					SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log_ps(&tmpByteData, &oriData[sz_tsc->intersect_size], pwRelBoundRatio, dataLength - sz_tsc->intersect_size, &tmpOutSize, min, max, 2);
 
 			}
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION){
+					printf("entering VR_REL; phase: %d\n", phase);
 					if (phase == 1)
 					//multisteps->compressionType = SZ_compress_args_float_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 

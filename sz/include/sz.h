@@ -287,6 +287,7 @@ typedef struct sz_tsc_metainfo
 } sz_tsc_metadata;
 
 extern float delta_t_opt[5]; //sihuan added
+extern float cmp_ratio[6]; //sihuan added
 
 extern int versionNumber[4];
 
@@ -304,7 +305,8 @@ extern SZ_VarSet* sz_varset;
 extern sz_multisteps *multisteps; //compression based on multiple time steps (time-dimension based compression)
 extern sz_tsc_metadata *sz_tsc;
 extern SZ_Variable* v_global; //sihuan added
-extern int TheCurVarNum;
+extern int TheCurVarNum; //sihuan added
+extern int vlct;
 
 //for pastri 
 #ifdef PASTRI

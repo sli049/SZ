@@ -138,7 +138,10 @@ float calculate_delta_t(size_t size){
 	float* x1 = (float*) v_tmp->data;
 	float* x0 = (float*) v_tmp->multisteps->hist_data;
 	while(strcmp(v_tmp->varName, "vx")) v_tmp = v_tmp->next;
-	float* vx0 = (float*) v_tmp->multisteps->hist_data;
+	float* vx0 = NULL;
+	if (vlct == 1 && v_tmp->errBoundMode == PW_REL) vx0 = (float*) v_tmp->multisteps->hist_invlog_data;
+	//if (vlct == 1 ) vx0 = (float*) v_tmp->multisteps->hist_invlog_data;
+	else vx0 = v_tmp->multisteps->hist_data;
 	int i, j;
 	double denom = 0.0;
 	double div = 0.0;

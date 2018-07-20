@@ -166,7 +166,10 @@ void decompressDataSeries_float_1D_ts_vlct(float** data, size_t dataSeriesLength
 	}
 	else printf("!!!!!!!!Should not call SZ_compress_float_1D_MDQ_ts_vlct, instead consider SZ_compress_float_1D_MDQ_ts!!!!!\n");
 
-	float* lastSnapshotData_vol = (float*)(v_tmp->multisteps->hist_data);
+	float* lastSnapshotData_vol = NULL;
+	if (v_tmp->errBoundMode == PW_REL)
+		lastSnapshotData_vol =  (float*)(v_tmp->multisteps->hist_invlog_data);
+	else lastSnapshotData_vol = (float*)(v_tmp->multisteps->hist_data);
 
 
 

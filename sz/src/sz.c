@@ -31,6 +31,7 @@ int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 
 float delta_t_opt[5] = {3.4630957287598745e-05, 5.2311700705000656e-05, 3.5391612072822954e-05, 5.3441990932428505e-05, 5.4088709466407214e-05};
 //sihuan added, this is only to test ideas. need to be calculated online when ideas are implemented
+float cmp_ratio[6] = {0.0}; //sihuan added: for statistics
 
 int dataEndianType = LITTLE_ENDIAN_DATA; //*endian type of the data read from disk
 int sysEndianType; //*sysEndianType is actually set automatically.
@@ -50,6 +51,7 @@ sz_multisteps *multisteps = NULL;
 sz_tsc_metadata *sz_tsc = NULL;
 SZ_Variable* v_global = NULL; //sihuan make it global
 int TheCurVarNum = 0;//sihuan make a global var counter
+int vlct = 1; //sihuan make a global var, 0 means v predicting x is not applied, 1 means applied
 
 //only for Pastri compressor
 #ifdef PASTRI
@@ -911,6 +913,7 @@ int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 }
 int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 {
+	//vlct = 1;
 	TheCurVarNum = -1; //sihuan: finishing a snapshot should reset the var number.
 	confparams_cpr->szMode = SZ_TEMPORAL_COMPRESSION;
 	confparams_cpr->predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
@@ -957,7 +960,9 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 		sz_tsc->bit_array = tmp_bitarray;
 		cur_intersect_size = intersectAndsort(sz_tsc->hist_index, preLen, vset, dataLen, sz_tsc->bit_array);
 		//sihuan added: should calculate delta_t now;
-		//delta_t_opt[sz_tsc->currentStep-1] = calculate_delta_t(cur_intersect_size);
+		delta_t_opt[sz_tsc->currentStep-1] = calculate_delta_t(cur_intersect_size);
+		//sihuan comment: the delta t should be written to an output file for furhter decompression; otherwise,
+		//the delta t used in compress and decompress are different; thus error is not bounded
 		//sihuan added: should write the reordered input for later decompression validation
 		write_reordered_tofile(vset, dataLen);
 		//now write the bitarray to an output file
@@ -1008,6 +1013,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 		if (i == 0) v = vset->header->next;
 		v_global = v;
 		multisteps = v->multisteps; //assign the v's multisteps to the global variable 'multisteps', which will be used in the following compression.
+		//if (v->errBoundMode == PW_REL) (float*)multisteps->hist_invlog_data = (float*)
 		//sihuan debug
 		#if 0
 		printf("current variable name: %s\n", v->varName);
@@ -1175,7 +1181,10 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 	printf("***********************printing results********************\n");
 	for (i = 0; i < vset->count - 1; i++)
 		printf("variable %d has compressed size: %zu, compression ratio: %.5f\n", i, outSize_[i], (float)(dataLen*sizeof(float))/(float)outSize_[i]);
+	cmp_ratio[sz_tsc->currentStep] = (float)(dataLen*sizeof(float)*(vset->count-1))/(float)(*outSize);
+	printf("the overall compression ratio for this step is: %.5f\n",cmp_ratio[sz_tsc->currentStep]);
 	printf("***********************ending printing*********************\n");
+
 
 
 	sz_tsc->currentStep ++;	

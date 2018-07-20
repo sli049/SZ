@@ -87,9 +87,13 @@ void SZ_batchAddVar(char* varName, int dataType, void* data,
 	
 	size_t dataLen = computeDataLength(r5, r4, r3, r2, r1);
 	if(dataType==SZ_FLOAT)
-	{
+	{//sihuan changed: initialize hist_invlog_data only if the varialble is PW_REL mode
 		var->multisteps->hist_data = (float*)malloc(sizeof(float)*dataLen);
 		memset(var->multisteps->hist_data, 0, sizeof(float)*dataLen);
+		if (var->errBoundMode == PW_REL){
+			var->multisteps->hist_invlog_data = (float*)malloc(sizeof(float)*dataLen);
+			memset(var->multisteps->hist_invlog_data, 0, sizeof(float)*dataLen);
+		}
 	}
 	else if(dataType==SZ_DOUBLE)
 	{

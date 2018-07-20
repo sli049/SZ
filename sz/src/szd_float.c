@@ -97,6 +97,7 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 	{
 		if(tdps->raBytes_size > 0) //v2.0
 		{
+			printf("goes to v2.0\n");
 			if (dim == 1)
 				getSnapshotData_float_1D(newData,r1,tdps, errBoundMode);
 			else if(dim == 2)
@@ -113,6 +114,7 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 		}
 		else //1.4.13
 		{
+			printf("goes to v1.4.13\n");
 			if (dim == 1)
 				getSnapshotData_float_1D(newData,r1,tdps, errBoundMode);
 			else if (dim == 2)
@@ -1800,8 +1802,12 @@ void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPo
 			}
 			else 
 			{
-				decompressDataSeries_float_1D_pwr_pre_log(data, dataSeriesLength, tdps);
-				//decompressDataSeries_float_1D_pwrgroup(data, dataSeriesLength, tdps);
+				if (vlct != 1)
+					decompressDataSeries_float_1D_pwr_pre_log(data, dataSeriesLength, tdps);
+					//decompressDataSeries_float_1D_pwrgroup(data, dataSeriesLength, tdps);
+				if (vlct == 1)
+					decompressDataSeries_float_1D_pwr_pre_log_hist_invlog(data, dataSeriesLength, tdps);
+
 			}
 			return;
 		} else {
@@ -1861,10 +1867,17 @@ void getSnapshotData_float_1D_ps(float** data, size_t dataSeriesLength, TightDat
 						decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
 					if (phase == 1) //phase1 used time compression
 						{
-							if (TheCurVarNum >= 3)
+							if (vlct != 1)
 								decompressDataSeries_float_1D_ts(data, dataSeriesLength, multisteps, tdps);
+							if (vlct == 1){
+								if (TheCurVarNum >= 3)
+									decompressDataSeries_float_1D_ts(data, dataSeriesLength, multisteps, tdps);
+								else decompressDataSeries_float_1D_ts_vlct(data, dataSeriesLength, multisteps, tdps);
+							}
+							//if (TheCurVarNum >= 0)
+								//decompressDataSeries_float_1D_ts(data, dataSeriesLength, multisteps, tdps);
 							//multisteps->hist_data += dataSeriesLength*sizeof(float);
-							else decompressDataSeries_float_1D_ts_vlct(data, dataSeriesLength, multisteps, tdps);
+							//else decompressDataSeries_float_1D_ts_vlct(data, dataSeriesLength, multisteps, tdps);
 						}					
 				}
 				else
@@ -1874,7 +1887,11 @@ void getSnapshotData_float_1D_ps(float** data, size_t dataSeriesLength, TightDat
 			else 
 			{
 				//decompressDataSeries_float_1D_pwr(data, dataSeriesLength, tdps);
-				decompressDataSeries_float_1D_pwrgroup(data, dataSeriesLength, tdps);
+				//decompressDataSeries_float_1D_pwrgroup(data, dataSeriesLength, tdps);
+				if (phase == 2)
+					decompressDataSeries_float_1D_pwr_pre_log(data, dataSeriesLength, tdps);
+				if (phase == 1)
+					decompressDataSeries_float_1D_pwr_pre_log_ts(data, dataSeriesLength, multisteps, tdps);
 			}
 			return;
 		} else {

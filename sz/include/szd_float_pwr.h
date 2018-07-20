@@ -23,6 +23,10 @@ void decompressDataSeries_float_3D_pwr(float** data, size_t r1, size_t r2, size_
 char* decompressGroupIDArray(unsigned char* bytes, size_t dataLength);
 void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_1D_pwr_pre_log(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps);
+void decompressDataSeries_float_1D_pwr_pre_log_hist_invlog(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps);
+//sihuan added: 
+void decompressDataSeries_float_1D_pwr_pre_log_ts(float** data, size_t dataSeriesLength, sz_multisteps* multisteps, TightDataPointStorageF* tdps);
+//sihuan added
 void decompressDataSeries_float_2D_pwr_pre_log(float** data, size_t r1, size_t r2, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_3D_pwr_pre_log(float** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageF* tdps);
 
