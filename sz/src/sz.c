@@ -1136,8 +1136,9 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 	
 	//sizeof(int)==current time step; 2*sizeof(char)+sizeof(size_t)=={compressionType + datatype + compression_data_size}; 
 	//sizeof(char)==# variables
-	//sihuan added: sizeof(size_t)
-	*outSize = sizeof(int) + sizeof(unsigned short) + sizeof(size_t) + totalSize + vset->count*(2*sizeof(unsigned char)+sizeof(size_t));
+	//sihuan added: sizeof(size_t): for current step intersection size
+	//sihuan added: sizeof(size_t): for current step dimension size: r1
+	*outSize = sizeof(int) + sizeof(unsigned short) + 2*sizeof(size_t) + totalSize + vset->count*(2*sizeof(unsigned char)+sizeof(size_t));
 	*newByteData = (unsigned char*)malloc(*outSize); 
 	unsigned char* p = *newByteData;
 
@@ -1146,8 +1147,11 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 	//shortToBytes(p, vset->count);
 	shortToBytes(p, vset->count-1);// sihuan updated: subtract the id varialble: so vset->count-1;
 	p+=2;
-	sizeToBytes(p, sz_tsc->intersect_size);//sihuan added
+	sizeToBytes(p, sz_tsc->intersect_size);//sihuan added:current step intersection size
 	p += sizeof(size_t);//sihuan added
+	sizeToBytes(p, vset->header->next->r1);//sihuan added:current step input dimension
+	p += sizeof(size_t);//sihuan added
+	printf("the compressed current step r1 is: %zu\n", vset->header->next->r1);
 	
 	//for(i=0;i<vset->count;i++)
 	for(i=0;i<vset->count-1;i++)//sihuan updated: subtract the id variable: so vset->count-1;
@@ -1300,6 +1304,9 @@ void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 	size_t intersection_size = bytesToSize(q);
 	q += sizeof(size_t);
 	printf("the current step intersection_size is: %zu\n", intersection_size);
+	r1 = bytesToSize(q);
+	q += sizeof(size_t);
+	printf("the current step r1 is: %zu\n", r1);
 	
 	if(nbVars != sz_varset->count)
 	{
@@ -1321,7 +1328,8 @@ void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 		r4 = p->r4;
 		r3 = p->r3;
 		r2 = p->r2;
-		r1 = p->r1;
+		//r1 = p->r1; //sihuan comment it 
+		p->r1 = r1; //instead we want this value back to know how many bytes we will write to the file
 		size_t dataLen = computeDataLength(r5, r4, r3, r2, r1);		
 		multisteps->compressionType = *(q++);
 		//sihuan debug

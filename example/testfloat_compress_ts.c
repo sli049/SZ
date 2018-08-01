@@ -103,6 +103,7 @@ int main(int argc, char * argv[])
     }
 
     int file_num[6] = {100, 102, 105, 107, 110, 113};
+    //int file_num[101] = {42, 43, 44, 45, 46, 48, 49, 50, 52, 53, 54, 56, 57, 59, 60, 62, 63, 65, 67, 68, 70, 72, 74, 76, 77, 79, 81, 84, 86, 88, 90, 92, 95, 97, 100, 102, 105, 107, 110, 113, 116, 119, 121, 124, 127, 131, 134, 137, 141, 144, 148, 151, 155, 159, 163, 167, 171, 176, 180, 184, 189, 194, 198, 203, 208, 213, 219, 224, 230, 235, 241, 247, 253, 259, 266, 272, 279, 286, 293, 300, 307, 315, 323, 331, 338, 347, 355, 365, 373, 382, 392, 401, 411, 421, 432, 442, 453, 464, 475, 487, 499};
    
     size_t outSize; 
     unsigned char *bytes = NULL;
@@ -119,6 +120,21 @@ int main(int argc, char * argv[])
         sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#21-i.dat", oriDir, file_num[i]);
         int64_t* index_ = readInt64Data(oriFilePath, &nbEle, &status);
         memcpy(index, index_, nbEle*sizeof(int64_t));
+
+
+        //sihuan updated the variable dimensions
+        SZ_Variable* v = NULL;
+        v = sz_varset->header->next;
+        int loop;
+        for (loop = 0; loop < 6; loop++){
+            v->r1 = nbEle;
+            v=v->next;
+        }
+        printf("the updated r1 is: %zu\n", sz_varset->header->next->r1);
+
+
+
+
         //printf("--------------- %lld \n", index_[0]);
 		//float *data_ = readFloatData(oriFilePath, &nbEle, &status);
 		//memcpy(data, data_, nbEle*sizeof(float));

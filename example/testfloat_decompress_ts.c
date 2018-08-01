@@ -78,7 +78,7 @@ int main(int argc, char * argv[])
     //float *data = (float*)malloc(sizeof(float)*dataLength);
     float **data = (float**) malloc(NB_variable * sizeof(float*));
     for (i = 0; i < NB_variable; i++){
-        data[i] = (float*) malloc(dataLength * sizeof(float));
+        data[i] = (float*) malloc((dataLength+dataLength/10) * sizeof(float));
     }
     //SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
     SZ_registerVar("x", SZ_FLOAT, data[0], REL, 0, eb, 0, r5, r4, r3, r2, r1);
@@ -131,7 +131,8 @@ int main(int argc, char * argv[])
         for (m = 0; m < 6; m++){
             sprintf(outputFilePath, "%s/QCLOUDf%02d-%d.bin.dat.sz2.out", outputDir, i, m);
             printf("writing decompressed data to %s\n", outputFilePath);
-            writeFloatData_inBytes(data[m], dataLength, outputFilePath, &status);// how to manage multi variables in data[]?
+            //writeFloatData_inBytes(data[m], dataLength, outputFilePath, &status);// how to manage multi variables in data[]?
+            writeFloatData_inBytes(data[m], sz_varset->header->next->r1, outputFilePath, &status);//sihuan updated
         }
 		free(bytes);
 	}
