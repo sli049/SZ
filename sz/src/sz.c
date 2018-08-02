@@ -1052,6 +1052,8 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 			}
 			else{
 				SZ_compress_args_float(&(compressBuffer[i]), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
+				//v->compressType = 0;
+				multisteps->compressionType = 0;//sihuan added
 				//printf("The current varialbe of the current step %d is compressed by method: %d\n", sz_tsc->currentStep, multisteps->compressionType);
 			}
 			//need to handle the rest part now
@@ -1161,6 +1163,10 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 		if (i == 0) v = vset->header->next;
 	
 		*p = (unsigned char)v->compressType; //1 byte
+		//sihuan debug
+		*p = (unsigned char)multisteps->compressionType;//sihuan debug
+		//printf("the current varialbe written compression type is: %d", v->compressType);
+		printf("the current varialbe written compression type is: %d", multisteps->compressionType);
 		p++;
 		*p = (unsigned char)v->dataType; //1 byte
 		p++;
