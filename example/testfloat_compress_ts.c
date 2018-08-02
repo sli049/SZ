@@ -77,6 +77,7 @@ int main(int argc, char * argv[])
     char oriFilePath[600];
     size_t nbEle;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
+	dataLength = dataLength + dataLength/10;
     //float *data = (float*)malloc(sizeof(float)*dataLength);
     float **data = (float**) malloc(NB_variable * sizeof(float*));
     for (i = 0; i < NB_variable; i++){
@@ -102,12 +103,12 @@ int main(int argc, char * argv[])
 		exit(0);
     }
 
-    int file_num[6] = {100, 102, 105, 107, 110, 113};
-    //int file_num[101] = {42, 43, 44, 45, 46, 48, 49, 50, 52, 53, 54, 56, 57, 59, 60, 62, 63, 65, 67, 68, 70, 72, 74, 76, 77, 79, 81, 84, 86, 88, 90, 92, 95, 97, 100, 102, 105, 107, 110, 113, 116, 119, 121, 124, 127, 131, 134, 137, 141, 144, 148, 151, 155, 159, 163, 167, 171, 176, 180, 184, 189, 194, 198, 203, 208, 213, 219, 224, 230, 235, 241, 247, 253, 259, 266, 272, 279, 286, 293, 300, 307, 315, 323, 331, 338, 347, 355, 365, 373, 382, 392, 401, 411, 421, 432, 442, 453, 464, 475, 487, 499};
+    //int file_num[6] = {100, 102, 105, 107, 110, 113};
+    int file_num[101] = {42, 43, 44, 45, 46, 48, 49, 50, 52, 53, 54, 56, 57, 59, 60, 62, 63, 65, 67, 68, 70, 72, 74, 76, 77, 79, 81, 84, 86, 88, 90, 92, 95, 97, 100, 102, 105, 107, 110, 113, 116, 119, 121, 124, 127, 131, 134, 137, 141, 144, 148, 151, 155, 159, 163, 167, 171, 176, 180, 184, 189, 194, 198, 203, 208, 213, 219, 224, 230, 235, 241, 247, 253, 259, 266, 272, 279, 286, 293, 300, 307, 315, 323, 331, 338, 347, 355, 365, 373, 382, 392, 401, 411, 421, 432, 442, 453, 464, 475, 487, 499};
    
     size_t outSize; 
     unsigned char *bytes = NULL;
-    for(i=0;i<6;i++)
+    for(i=0;i<10;i++)
 	{
 		printf("simulation time step %d\n", i);
         int m = 0;
@@ -117,10 +118,11 @@ int main(int argc, char * argv[])
             memcpy(data[m], data_, nbEle*sizeof(float));
             free(data_);
         }
-        sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#21-i.dat", oriDir, file_num[i]);
+        sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#21-id.dat", oriDir, file_num[i]);
         int64_t* index_ = readInt64Data(oriFilePath, &nbEle, &status);
         memcpy(index, index_, nbEle*sizeof(int64_t));
 
+	printf("current step is reading file: %s\n", oriFilePath);
 
         //sihuan updated the variable dimensions
         SZ_Variable* v = NULL;
@@ -149,7 +151,7 @@ int main(int argc, char * argv[])
 		//free(data_);
 	}
     sprintf(outputFilePath, "%s/delta_t_opt_output.txt", outputDir);
-    writeFloatData(delta_t_opt, 5, outputFilePath, &status);
+    writeFloatData(delta_t_opt, 100, outputFilePath, &status);
 
     float overall_cmp_ratio = 0.0;
     for (i = 0; i < 6; i++){

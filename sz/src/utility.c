@@ -90,7 +90,17 @@ size_t intersectAndsort(int64_t* preIndex, size_t preLen, SZ_VarSet* curVar, siz
 	}
 	for (i = 0; i < preLen; i++)
 		bitarray[i] = '0';
+	//sihuan debug:intersection size is 0 for some snapshot
+	printf("Pre ID: \n");
+	for (i = 0; i < 10; i++)
+		printf("%zu ", preIndex[i]);
+	printf("\n");
+	printf("Cur ID: \n");
+	for (i = 0; i < 10; i++)
+		printf("%zu ", ((int64_t*)v[6]->data)[i]);
+	printf("\n");
 	i = 0;
+	
 	while(i < preLen && j < dataLen){
 		if (preIndex[i] == ((int64_t*)v[6]->data)[j]){
 			cnt++;

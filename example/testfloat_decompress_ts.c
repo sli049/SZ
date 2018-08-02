@@ -38,6 +38,8 @@ void cost_end()
 
 int main(int argc, char * argv[])
 {
+
+	int	total_snap = 10;
     int i = 0;
     size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char cmprFilePath[640], outputDir[640], outputFilePath[600];
@@ -100,23 +102,23 @@ int main(int argc, char * argv[])
     }
     //size_t delta_t_num;
     sprintf(cmprFilePath, "%s/delta_t_opt_output.txt", outputDir);
-    float* tmp_delta_t = (float*) malloc(sizeof(float)*5);
+    float* tmp_delta_t = (float*) malloc(sizeof(float)*total_snap);
     FILE* myfile;
     myfile = fopen(cmprFilePath, "r");
-    for (i = 0; i < 5; i++){
+    for (i = 0; i < total_snap; i++){
         fscanf(myfile, "%f", &tmp_delta_t[i]);
     }
 
     //tmp_delta_t = readFloatData(cmprFilePath, &delta_t_num, &status);
     printf("read delta time from its output file:\n");
-    for (i = 0; i < 5; i++){
+    for (i = 0; i < total_snap; i++){
         printf("%.10f  ", tmp_delta_t[i]);
         delta_t_opt[i] = tmp_delta_t[i];
     }
     printf("\n");
     //return 0;
    
-    for(i=0;i<6;i++)
+    for(i=0;i<total_snap;i++)
 	{
 		printf("simulation time step %d\n", i);
 		sprintf(cmprFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);

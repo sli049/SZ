@@ -652,7 +652,7 @@ double realPrecision, float valueRangeSize, float medianValue_f)
 	j++;
 
 
-	int TmArrID = sz_tsc->currentStep - 1;
+	int TmArrID = sz_tsc->currentStep;
 	float delta_t = delta_t_opt[TmArrID];
 
 	//for(i=2;i<dataLength && j < 418605;i++, j++)//sihuan update:

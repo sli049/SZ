@@ -229,7 +229,7 @@ void decompressDataSeries_float_1D_ts_vlct(float** data, size_t dataSeriesLength
 	while (dec_bit_arr[m] == '1'){m++;}
 	
 	int type_;
-	float delta_t = delta_t_opt[sz_tsc->currentStep-1];
+	float delta_t = delta_t_opt[sz_tsc->currentStep];
 	for (i = 0; i < dataSeriesLength; i++, m++) { //need to j++ also
 		type_ = type[i];
 		while(dec_bit_arr[m] == '1'){m++;}

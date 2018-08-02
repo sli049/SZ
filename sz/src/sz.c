@@ -29,9 +29,10 @@ int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 //int SZ_SIZE_TYPE = 8;
 
 
-float delta_t_opt[5] = {3.4630957287598745e-05, 5.2311700705000656e-05, 3.5391612072822954e-05, 5.3441990932428505e-05, 5.4088709466407214e-05};
+//float delta_t_opt[100] = {3.4630957287598745e-05, 5.2311700705000656e-05, 3.5391612072822954e-05, 5.3441990932428505e-05, 5.4088709466407214e-05};
+float delta_t_opt[100] = {0.0};
 //sihuan added, this is only to test ideas. need to be calculated online when ideas are implemented
-float cmp_ratio[6] = {0.0}; //sihuan added: for statistics
+float cmp_ratio[100] = {0.0}; //sihuan added: for statistics
 
 int dataEndianType = LITTLE_ENDIAN_DATA; //*endian type of the data read from disk
 int sysEndianType; //*sysEndianType is actually set automatically.
@@ -960,7 +961,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 		sz_tsc->bit_array = tmp_bitarray;
 		cur_intersect_size = intersectAndsort(sz_tsc->hist_index, preLen, vset, dataLen, sz_tsc->bit_array);
 		//sihuan added: should calculate delta_t now;
-		delta_t_opt[sz_tsc->currentStep-1] = calculate_delta_t(cur_intersect_size);
+		delta_t_opt[sz_tsc->currentStep] = calculate_delta_t(cur_intersect_size);
 		//sihuan comment: the delta t should be written to an output file for furhter decompression; otherwise,
 		//the delta t used in compress and decompress are different; thus error is not bounded
 		//sihuan added: should write the reordered input for later decompression validation

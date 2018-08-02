@@ -286,8 +286,8 @@ typedef struct sz_tsc_metainfo
 	int64_t* hist_index; //sihuan added: prestep index 
 } sz_tsc_metadata;
 
-extern float delta_t_opt[5]; //sihuan added
-extern float cmp_ratio[6]; //sihuan added
+extern float delta_t_opt[100]; //sihuan added
+extern float cmp_ratio[100]; //sihuan added
 
 extern int versionNumber[4];
 
