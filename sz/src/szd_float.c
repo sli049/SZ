@@ -189,24 +189,36 @@ int SZ_decompress_args_float_ps(float** newData, size_t r5, size_t r4, size_t r3
 	TightDataPointStorageF* tdps;
 	int errBoundMode = new_TightDataPointStorageF_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
 	//sihuan degbug
-	printf("it goes here\n");
+	printf("it goes here; 4th one\n");
 	
 	//writeByteData(tdps->typeArray, tdps->typeArray_size, "decompress-typebytes.tbt");
 	int dim = computeDimension(r5,r4,r3,r2,r1);	
 	int floatSize = sizeof(float);
-	if(tdps->isLossless)
+	//sihuan debug:
+	if (tdps->isLossless)
+	//if(tdps->isLossless)
 	{
-		*newData = (float*)malloc(floatSize*dataLength);
+		printf("goes to lossless\n");
+		//*newData = (float*)malloc(floatSize*dataLength);
+		//sihuan debug:
+		*newData = (float*)malloc(floatSize*RealDataLen);
+
 		if(sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
-			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, dataLength*floatSize);
+			//memcpy(*newData, szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, dataLength*floatSize);
+			//sihuan debug:
+			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, RealDataLen*floatSize);
 		}
 		else
 		{
 			unsigned char* p = szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE;
-			for(i=0;i<dataLength;i++,p+=floatSize)
+			//for(i=0;i<dataLength;i++,p+=floatSize)
+			//sihuan debug
+			for(i=0;i<RealDataLen;i++,p+=floatSize)
 				(*newData)[i] = bytesToFloat(p);
-		}		
+		}	
+	//sihuan debug
+	printf("is lossless part went through: memcpy correct\n");	
 	}
 	else 
 	{
@@ -247,8 +259,13 @@ int SZ_decompress_args_float_ps(float** newData, size_t r5, size_t r4, size_t r3
 		}
 	}
 	free_TightDataPointStorageF2(tdps);
-	if(confparams_dec->szMode!=SZ_BEST_SPEED && cmpSize!=8+MetaDataByteLength+exe_params->SZ_SIZE_TYPE)
+	//sihuan debug: 
+	printf("free_TightDataPointStorageF2(tdps) went through\n");
+	if(confparams_dec->szMode!=SZ_BEST_SPEED && cmpSize!=8+MetaDataByteLength+exe_params->SZ_SIZE_TYPE){
+		printf("IF statement another free(szTmpBytes)\n");
 		free(szTmpBytes);
+		}
+	printf("SZ_decompress_args_float_ps() went through\n");
 	return status;
 }
 

@@ -288,9 +288,9 @@ typedef struct sz_tsc_metainfo
 
 extern float delta_t_opt[100]; //sihuan added
 extern float cmp_ratio[100]; //sihuan added
-
+extern double bit_rate[6]; //sihuan added
 extern int versionNumber[4];
-
+extern int mem_over; //sihuan added
 //-------------------key global variables--------------
 extern int dataEndianType; //*endian type of the data read from disk
 extern int sysEndianType; //*sysEndianType is actually set automatically.

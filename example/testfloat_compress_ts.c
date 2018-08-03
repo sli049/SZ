@@ -52,9 +52,12 @@ int main(int argc, char * argv[])
 		printf("Example: testfloat_compress_ts sz.config /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
 		exit(0);
     }
+	int rank_num = 20;
    
     cfgFile=argv[1];
     sprintf(oriDir, "%s", argv[2]);//add a comment to test github
+	int i_start = 0;
+	int i_end = 0;
     if(argc>=4)
 		r1 = atoi(argv[3]); //8
     if(argc>=5)
@@ -64,9 +67,13 @@ int main(int argc, char * argv[])
 		//r3 = atoi(argv[5]); //128
         eb2 = atof(argv[5]);
     if(argc>=7)
-        r4 = atoi(argv[6]);
+        //r4 = atoi(argv[6]);
+	i_start = atoi(argv[6]);
     if(argc>=8)
-        r5 = atoi(argv[7]);
+        //r5 = atoi(argv[7]);
+	i_end = atoi(argv[7]);
+	if (argc>=9)
+		rank_num = atoi(argv[8]);
    
     printf("cfgFile=%s\n", cfgFile); 
     int status = SZ_Init(cfgFile);
@@ -77,7 +84,7 @@ int main(int argc, char * argv[])
     char oriFilePath[600];
     size_t nbEle;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
-	dataLength = dataLength + dataLength/10;
+	dataLength = dataLength + dataLength/mem_over;
     //float *data = (float*)malloc(sizeof(float)*dataLength);
     float **data = (float**) malloc(NB_variable * sizeof(float*));
     for (i = 0; i < NB_variable; i++){
@@ -108,17 +115,18 @@ int main(int argc, char * argv[])
    
     size_t outSize; 
     unsigned char *bytes = NULL;
-    for(i=0;i<10;i++)
+    for(i=i_start;i<i_end;i++)
 	{
 		printf("simulation time step %d\n", i);
         int m = 0;
         for (m = 0; m < NB_variable; m++){
-            sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#21-%d.dat", oriDir, file_num[i], m);
+            sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#%d-%d.dat", oriDir, file_num[i],rank_num, m);
+		printf("we are reading file name: %s\n", oriFilePath);
             float* data_ = readFloatData(oriFilePath, &nbEle, &status);
             memcpy(data[m], data_, nbEle*sizeof(float));
             free(data_);
         }
-        sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#21-id.dat", oriDir, file_num[i]);
+        sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#%d-id.dat", oriDir, file_num[i], rank_num);
         int64_t* index_ = readInt64Data(oriFilePath, &nbEle, &status);
         memcpy(index, index_, nbEle*sizeof(int64_t));
 
@@ -152,7 +160,13 @@ int main(int argc, char * argv[])
 	}
     sprintf(outputFilePath, "%s/delta_t_opt_output.txt", outputDir);
     writeFloatData(delta_t_opt, 100, outputFilePath, &status);
-
+	sprintf(outputFilePath, "%s/bit_rate_output_%f_%f.txt", outputDir, eb, eb2);
+	//writeFloatData(bit_rate, 6, outputFilePath, &status);
+	//sihuan added: calculate average bit_rate
+	for (i = 0; i < 6; i++)
+		bit_rate[i] = bit_rate[i]/(double)(i_end-i_start);
+	
+	writeDoubleData(bit_rate, 6, outputFilePath, &status);
     float overall_cmp_ratio = 0.0;
     for (i = 0; i < 6; i++){
         overall_cmp_ratio+=1.0/cmp_ratio[i];

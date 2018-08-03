@@ -39,7 +39,7 @@ void cost_end()
 int main(int argc, char * argv[])
 {
 
-	int	total_snap = 10;
+	int	total_snap = 100;
     int i = 0;
     size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char cmprFilePath[640], outputDir[640], outputFilePath[600];
@@ -60,7 +60,9 @@ int main(int argc, char * argv[])
     	printf("Error: wrong input\n");
 	printf("Test case: testfloat_decompress_ts [srcDir] [dimension sizes...]\n");//add a comment to test github
 	exit(0);
-    } 
+    }
+	int i_start = 0; 
+	int i_end = total_snap;
     if(argc>=3)
 		r1 = atoi(argv[2]); //8
     if(argc>=4)
@@ -70,9 +72,11 @@ int main(int argc, char * argv[])
 		//r3 = atoi(argv[4]); //128
         eb2 = atof(argv[4]);
     if(argc>=6)
-        r4 = atoi(argv[5]);
+        //r4 = atoi(argv[5]);
+        i_start = atoi(argv[5]);
     if(argc>=7)
-        r5 = atoi(argv[6]);
+        //r5 = atoi(argv[6]);
+	i_end = atoi(argv[6]);
       
     char oriFilePath[600];
     size_t byteLen = 0;
@@ -80,7 +84,7 @@ int main(int argc, char * argv[])
     //float *data = (float*)malloc(sizeof(float)*dataLength);
     float **data = (float**) malloc(NB_variable * sizeof(float*));
     for (i = 0; i < NB_variable; i++){
-        data[i] = (float*) malloc((dataLength+dataLength/10) * sizeof(float));
+        data[i] = (float*) malloc((dataLength+dataLength/mem_over) * sizeof(float));
     }
     //SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
     SZ_registerVar("x", SZ_FLOAT, data[0], REL, 0, eb, 0, r5, r4, r3, r2, r1);
@@ -108,6 +112,7 @@ int main(int argc, char * argv[])
     for (i = 0; i < total_snap; i++){
         fscanf(myfile, "%f", &tmp_delta_t[i]);
     }
+	fclose(myfile);
 
     //tmp_delta_t = readFloatData(cmprFilePath, &delta_t_num, &status);
     printf("read delta time from its output file:\n");
@@ -118,7 +123,7 @@ int main(int argc, char * argv[])
     printf("\n");
     //return 0;
    
-    for(i=0;i<total_snap;i++)
+    for(i=i_start;i<i_end;i++)
 	{
 		printf("simulation time step %d\n", i);
 		sprintf(cmprFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);
@@ -129,6 +134,7 @@ int main(int argc, char * argv[])
 		SZ_decompress_ts_vlct(bytes, byteLen);
 		cost_end();
 		printf("timecost=%f\n",totalCost);
+	free(bytes);
         int m;
         for (m = 0; m < 6; m++){
             sprintf(outputFilePath, "%s/QCLOUDf%02d-%d.bin.dat.sz2.out", outputDir, i, m);
@@ -136,7 +142,7 @@ int main(int argc, char * argv[])
             //writeFloatData_inBytes(data[m], dataLength, outputFilePath, &status);// how to manage multi variables in data[]?
             writeFloatData_inBytes(data[m], sz_varset->header->next->r1, outputFilePath, &status);//sihuan updated
         }
-		free(bytes);
+	//	free(bytes);
 	}
 
     

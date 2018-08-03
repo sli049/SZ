@@ -27,13 +27,15 @@
 
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 //int SZ_SIZE_TYPE = 8;
-
+//sihuan added: extra memory
+int mem_over = 10;
 
 //float delta_t_opt[100] = {3.4630957287598745e-05, 5.2311700705000656e-05, 3.5391612072822954e-05, 5.3441990932428505e-05, 5.4088709466407214e-05};
 float delta_t_opt[100] = {0.0};
 //sihuan added, this is only to test ideas. need to be calculated online when ideas are implemented
 float cmp_ratio[100] = {0.0}; //sihuan added: for statistics
 
+double bit_rate[6] = {0.0}; //sihuan added: for output statistics
 int dataEndianType = LITTLE_ENDIAN_DATA; //*endian type of the data read from disk
 int sysEndianType; //*sysEndianType is actually set automatically.
 
@@ -1192,7 +1194,11 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 	printf("***********************printing results********************\n");
 	for (i = 0; i < vset->count - 1; i++)
 		printf("variable %d has compressed size: %zu, compression ratio: %.5f\n", i, outSize_[i], (float)(dataLen*sizeof(float))/(float)outSize_[i]);
+	
 	cmp_ratio[sz_tsc->currentStep] = (float)(dataLen*sizeof(float)*(vset->count-1))/(float)(*outSize);
+	for (i = 0; i < vset->count - 1; i++)
+		bit_rate[i] += (double)outSize_[i]/(double)(dataLen*sizeof(float))*32.0;
+	printf("updating bit_rate\n"); 
 	printf("the overall compression ratio for this step is: %.5f\n",cmp_ratio[sz_tsc->currentStep]);
 	printf("***********************ending printing*********************\n");
 

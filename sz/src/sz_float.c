@@ -958,8 +958,12 @@ size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, 
 
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 	
-	if(*outSize>dataLength*sizeof(float))
+	//if(*outSize>dataLength*sizeof(float)){
+	//sihuan debug:
+	if(*outSize>dataLength*sizeof(float)){
 		SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+		printf("this step: %d use lossless compression!!!\n", sz_tsc->currentStep);
+	}
 	
 	free_TightDataPointStorageF(tdps);
 	return compressionType;
