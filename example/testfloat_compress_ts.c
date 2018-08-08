@@ -17,6 +17,7 @@ struct timeval startTime;
 struct timeval endTime;  /* Start and end times */
 struct timeval costStart; /*only used for recording the cost*/
 double totalCost = 0;
+double all_snap_time[1] = {0.0}; //sihuan added
 
 #define NB_variable 6
 
@@ -52,12 +53,14 @@ int main(int argc, char * argv[])
 		printf("Example: testfloat_compress_ts sz.config /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
 		exit(0);
     }
-	int rank_num = 20;
+	int rank_num = 30;
    
     cfgFile=argv[1];
     sprintf(oriDir, "%s", argv[2]);//add a comment to test github
 	int i_start = 0;
-	int i_end = 0;
+	int i_end = 100;
+	int Snap_interval = 10;
+
     if(argc>=4)
 		r1 = atoi(argv[3]); //8
     if(argc>=5)
@@ -69,11 +72,19 @@ int main(int argc, char * argv[])
     if(argc>=7)
         //r4 = atoi(argv[6]);
 	i_start = atoi(argv[6]);
+	//Snap_interval = atoi(argv[6]);
     if(argc>=8)
         //r5 = atoi(argv[7]);
 	i_end = atoi(argv[7]);
+	//vlct = atoi(argv[7]);
 	if (argc>=9)
 		rank_num = atoi(argv[8]);
+	if (argc>=10)
+		Snap_interval = atoi(argv[9]);
+	if (argc>=11)
+		vlct = atoi(argv[10]);
+	
+	//confparams_cpr->snapshotCmprStep = Snap_interval;
    
     printf("cfgFile=%s\n", cfgFile); 
     int status = SZ_Init(cfgFile);
@@ -149,8 +160,10 @@ int main(int argc, char * argv[])
 		//float *data_ = readFloatData(oriFilePath, &nbEle, &status);
 		//memcpy(data, data_, nbEle*sizeof(float));
 		cost_start();
-		SZ_compress_ts_vlct(&bytes, &outSize);
+		SZ_compress_ts_vlct(&bytes, &outSize,Snap_interval);
+		//all_snap_time[0]+=totalCost;
 		cost_end();
+		all_snap_time[0]+=totalCost;
 		printf("timecost=%f\n",totalCost); 
 		sprintf(outputFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);
 		printf("writing compressed data to %s\n", outputFilePath);
@@ -167,6 +180,9 @@ int main(int argc, char * argv[])
 		bit_rate[i] = bit_rate[i]/(double)(i_end-i_start);
 	
 	writeDoubleData(bit_rate, 6, outputFilePath, &status);
+
+	sprintf(outputFilePath, "%s/compr_total_time_include_write_reorder_%f_%f.txt", outputDir, eb, eb2);
+	writeDoubleData(all_snap_time, 1, outputFilePath, &status);
     float overall_cmp_ratio = 0.0;
     for (i = 0; i < 6; i++){
         overall_cmp_ratio+=1.0/cmp_ratio[i];
@@ -174,6 +190,7 @@ int main(int argc, char * argv[])
     printf("The overall compration for 6 steps is: %.5f\n", 6.0/overall_cmp_ratio);
     
     printf("done\n");
+	printf("total time is: %f \n", all_snap_time[0]);
     free(data);
     SZ_Finalize();
     

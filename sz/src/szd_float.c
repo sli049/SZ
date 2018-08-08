@@ -150,7 +150,7 @@ int SZ_decompress_args_float_ps(float** newData, size_t r5, size_t r4, size_t r3
 	
 	if(cmpSize!=8+4+MetaDataByteLength && cmpSize!=8+8+MetaDataByteLength) //4,8 means two posibilities of SZ_SIZE_TYPE
 	{
-		printf("it goes here\n");
+		printf("it goes here, 1st\n");
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
 		if(confparams_dec->szMode!=SZ_TEMPORAL_COMPRESSION)
 		{
@@ -167,11 +167,13 @@ int SZ_decompress_args_float_ps(float** newData, size_t r5, size_t r4, size_t r3
 		}
 		else if(confparams_dec->szMode==SZ_BEST_COMPRESSION || confparams_dec->szMode==SZ_DEFAULT_COMPRESSION || confparams_dec->szMode==SZ_TEMPORAL_COMPRESSION)
 		{
-			printf("it goes here\n");
+			printf("it goes here, 2nd\n");
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
-				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
-			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
-			printf("it goes here\n");
+				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES;
+			printf("!!!!!!!!parameters to uncompress: cmpSize:%lu, targetUncompressSize: %lu\n", cmpSize, targetUncompressSize+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE); 
+			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+128+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
+			//tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+4);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
+			printf("it goes here, 3rd\n");
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		
@@ -207,6 +209,7 @@ int SZ_decompress_args_float_ps(float** newData, size_t r5, size_t r4, size_t r3
 		{
 			//memcpy(*newData, szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, dataLength*floatSize);
 			//sihuan debug:
+			printf("BID_ENDIDAN_SYSTEM\n");
 			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, RealDataLen*floatSize);
 		}
 		else
@@ -263,6 +266,7 @@ int SZ_decompress_args_float_ps(float** newData, size_t r5, size_t r4, size_t r3
 	printf("free_TightDataPointStorageF2(tdps) went through\n");
 	if(confparams_dec->szMode!=SZ_BEST_SPEED && cmpSize!=8+MetaDataByteLength+exe_params->SZ_SIZE_TYPE){
 		printf("IF statement another free(szTmpBytes)\n");
+		printf("exe_params->SZ_SIZE_TYPE");
 		free(szTmpBytes);
 		}
 	printf("SZ_decompress_args_float_ps() went through\n");

@@ -379,7 +379,7 @@ int SZ_deregisterVar(char* varName);
 int SZ_deregisterAllVars();
 
 int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
-int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize);//sihuan added
+int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_interval);//sihuan added
 
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
 void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength);//sihuan added

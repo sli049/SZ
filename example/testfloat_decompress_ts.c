@@ -17,7 +17,7 @@ struct timeval startTime;
 struct timeval endTime;  /* Start and end times */
 struct timeval costStart; /*only used for recording the cost*/
 double totalCost = 0;
-
+double all_snap_time = 0.0; //sihuan added
 #define NB_variable 6
 
 void cost_start()
@@ -77,6 +77,8 @@ int main(int argc, char * argv[])
     if(argc>=7)
         //r5 = atoi(argv[6]);
 	i_end = atoi(argv[6]);
+	if (argc>=8)
+		vlct = atoi(argv[7]);
       
     char oriFilePath[600];
     size_t byteLen = 0;
@@ -132,18 +134,22 @@ int main(int argc, char * argv[])
         printf("it goes through readByteData\n");
 		cost_start();
 		SZ_decompress_ts_vlct(bytes, byteLen);
+		//all_snap_time += totalCost;
 		cost_end();
+		all_snap_time += totalCost;
 		printf("timecost=%f\n",totalCost);
 	free(bytes);
         int m;
         for (m = 0; m < 6; m++){
-            sprintf(outputFilePath, "%s/QCLOUDf%02d-%d.bin.dat.sz2.out", outputDir, i, m);
+            sprintf(outputFilePath, "%s/QCLOUDf%d-%d.bin.dat.sz2.out", outputDir, i, m);
             printf("writing decompressed data to %s\n", outputFilePath);
             //writeFloatData_inBytes(data[m], dataLength, outputFilePath, &status);// how to manage multi variables in data[]?
             writeFloatData_inBytes(data[m], sz_varset->header->next->r1, outputFilePath, &status);//sihuan updated
         }
 	//	free(bytes);
 	}
+	sprintf(outputFilePath, "%s/decmpr_total_snap_time_%f_%f.txt", outputDir, eb, eb2);
+	writeDoubleData(&all_snap_time, 1, outputFilePath, &status);//sihuan added
 
     
     printf("done\n");

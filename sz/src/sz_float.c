@@ -2422,7 +2422,8 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log_ps(&tmpByteData, oriData, pwRelBoundRatio, sz_tsc->intersect_size, &tmpOutSize, min, max, 1);
 				//SZ_compress_args_float_NoCkRngeNoGzip_1D_pwrgroup(&tmpByteData, oriData, r1, absErr_Bound, relBoundRatio, pwRelBoundRatio, valueRangeSize, medianValue, &tmpOutSize);
 				if (phase == 2)
-					SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log_ps(&tmpByteData, &oriData[sz_tsc->intersect_size], pwRelBoundRatio, dataLength - sz_tsc->intersect_size, &tmpOutSize, min, max, 2);
+					//SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log_ps(&tmpByteData, &oriData[sz_tsc->intersect_size], pwRelBoundRatio, dataLength - sz_tsc->intersect_size, &tmpOutSize, min, max, 2);
+					SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log_ps(&tmpByteData, oriData+sz_tsc->intersect_size, pwRelBoundRatio, dataLength - sz_tsc->intersect_size, &tmpOutSize, min, max, 2);
 
 			}
 			else
@@ -2434,7 +2435,8 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 
 						multisteps->compressionType = SZ_compress_args_float_NoCkRngeNoGzip_1D_ps(&tmpByteData, oriData, sz_tsc->intersect_size, realPrecision, &tmpOutSize, valueRangeSize, medianValue, phase);
 					if (phase == 2)
-						multisteps->compressionType = SZ_compress_args_float_NoCkRngeNoGzip_1D_ps(&tmpByteData, &oriData[sz_tsc->intersect_size], dataLength - sz_tsc->intersect_size, realPrecision, &tmpOutSize, valueRangeSize, medianValue, phase);
+						//multisteps->compressionType = SZ_compress_args_float_NoCkRngeNoGzip_1D_ps(&tmpByteData, &oriData[sz_tsc->intersect_size], dataLength - sz_tsc->intersect_size, realPrecision, &tmpOutSize, valueRangeSize, medianValue, phase);
+						multisteps->compressionType = SZ_compress_args_float_NoCkRngeNoGzip_1D_ps(&tmpByteData, oriData+sz_tsc->intersect_size, dataLength - sz_tsc->intersect_size, realPrecision, &tmpOutSize, valueRangeSize, medianValue, phase);
 				}
 				else
 #endif				
@@ -2510,6 +2512,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		else if(confparams_cpr->szMode==SZ_BEST_COMPRESSION || confparams_cpr->szMode==SZ_DEFAULT_COMPRESSION || confparams_cpr->szMode==SZ_TEMPORAL_COMPRESSION)
 		{
 			*outSize = zlib_compress5(tmpByteData, tmpOutSize, newByteData, confparams_cpr->gzipMode);
+			printf("!!!!!!!!compress: cmpSize:%zu, targetUncompressSize: %zu\n", *outSize,tmpOutSize );
 			free(tmpByteData);
 		}
 		else

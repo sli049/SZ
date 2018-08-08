@@ -29,7 +29,7 @@ int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 //int SZ_SIZE_TYPE = 8;
 //sihuan added: extra memory
 int mem_over = 10;
-
+//int start_offset = 0; //sihuan added
 //float delta_t_opt[100] = {3.4630957287598745e-05, 5.2311700705000656e-05, 3.5391612072822954e-05, 5.3441990932428505e-05, 5.4088709466407214e-05};
 float delta_t_opt[100] = {0.0};
 //sihuan added, this is only to test ideas. need to be calculated online when ideas are implemented
@@ -914,9 +914,10 @@ int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 	
 	return SZ_SCES;
 }
-int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
+int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_interval)
 {
 	//vlct = 1;
+	printf("the setted vlct is: %d\n", vlct);
 	TheCurVarNum = -1; //sihuan: finishing a snapshot should reset the var number.
 	confparams_cpr->szMode = SZ_TEMPORAL_COMPRESSION;
 	confparams_cpr->predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
@@ -943,7 +944,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize)
 	size_t dataLen = computeDataLength(v->r5, v->r4, v->r3, v->r2, v->r1);
 	//printf("data length is: %zu\n", dataLen);
 	size_t cur_intersect_size;
-
+	confparams_cpr->snapshotCmprStep = Snap_interval;
 	//#if 0
 	printf("confparams_cpr->snapshotCmprStep is %d\n", confparams_cpr->snapshotCmprStep);
 	if (sz_tsc->currentStep % confparams_cpr->snapshotCmprStep == 0){
@@ -1286,6 +1287,7 @@ void SZ_decompress_ts(unsigned char *bytes, size_t byteLength)
 
 void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 {
+	printf("the setted vlct is: %d\n", vlct);
 	TheCurVarNum = -1; //each time call this function, this global var should be reset
 	if(confparams_dec==NULL)
 		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
@@ -1371,13 +1373,16 @@ void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 					printf("finish the first decompression phase\n");
 					//cmpBytes += tmp_cmpSize;
 					size_t tmp_cmpSize2 = cmpSize - tmp_cmpSize1 - sizeof(size_t);
+					unsigned char* cmp_tmp_ = (unsigned char*)malloc(tmp_cmpSize2);
+					memcpy(cmp_tmp_, cmpBytes+sizeof(size_t)+tmp_cmpSize1, tmp_cmpSize2);
 					SZ_decompress_args_float_ps(&newFloatData2, r5, r4, r3, r2, r1, cmpBytes+sizeof(size_t)+tmp_cmpSize1, tmp_cmpSize2, 2, dataLen - intersection_size);
+					//SZ_decompress_args_float_ps(&newFloatData2, r5, r4, r3, r2, r1, cmp_tmp_, tmp_cmpSize2, 2, dataLen - intersection_size);
 					printf("finish the second decompression phase\n");
 					//q += tmp_cmpSize;
 					memcpy(p->data, newFloatData1, intersection_size*sizeof(float));
 					memcpy(p->data+intersection_size*sizeof(float), newFloatData2, (dataLen-intersection_size)*sizeof(float));
 					free(newFloatData1);
-					free(newFloatData2);
+					//free(newFloatData2);
 					q += cmpSize;
 				}
 				else printf("Only snapshot, time or spatial-time decompression types are supported.\n");
