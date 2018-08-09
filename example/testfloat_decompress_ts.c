@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
     
     if(argc < 3)
     {
-		printf("Test case: testfloat_decompress_ts [srcDir] [dimension sizes...]\n");
+		printf("Test case: testfloat_decompress_ts [srcDir] [dimension sizes...] [eb for position] [PW_REL eb for velocity] [start snapshot number] [end snapshot number] [vlct 1 for yes 0 for no]\n");
 		printf("Example: testfloat_decompress_ts /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
 		exit(0);
     }
@@ -63,6 +63,7 @@ int main(int argc, char * argv[])
     }
 	int i_start = 0; 
 	int i_end = total_snap;
+	int Snap_interval = 10;
     if(argc>=3)
 		r1 = atoi(argv[2]); //8
     if(argc>=4)
@@ -77,6 +78,8 @@ int main(int argc, char * argv[])
     if(argc>=7)
         //r5 = atoi(argv[6]);
 	i_end = atoi(argv[6]);
+	//if (argc>=8)
+	//	Snap_interval = atoi(argv[7]);
 	if (argc>=8)
 		vlct = atoi(argv[7]);
       

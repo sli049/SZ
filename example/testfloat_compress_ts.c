@@ -49,8 +49,9 @@ int main(int argc, char * argv[])
     
     if(argc < 3)
     {
-		printf("Test case: testfloat_compress_ts [config_file] [srcDir] [dimension sizes...]\n");
+		printf("Test case: testfloat_compress_ts [config_file] [srcDir] [dimension sizes...] [eb for position] [PW_REL eb for velocity] [start snapshot] [end snapshot] [rank number] [snapshot interval] [vlct 1 for yes 0 for no]\n");
 		printf("Example: testfloat_compress_ts sz.config /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
+		printf("Example: 102032(r1) 0.001(eb) 0.01(eb2) 20 30 40 10 1\n");
 		exit(0);
     }
 	int rank_num = 30;
@@ -140,6 +141,7 @@ int main(int argc, char * argv[])
         sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#%d-id.dat", oriDir, file_num[i], rank_num);
         int64_t* index_ = readInt64Data(oriFilePath, &nbEle, &status);
         memcpy(index, index_, nbEle*sizeof(int64_t));
+	free(index_);
 
 	printf("current step is reading file: %s\n", oriFilePath);
 
@@ -191,6 +193,8 @@ int main(int argc, char * argv[])
     
     printf("done\n");
 	printf("total time is: %f \n", all_snap_time[0]);
+	for (i = 0; i < NB_variable; i++){
+		free(data[i]);}
     free(data);
     SZ_Finalize();
     

@@ -1072,6 +1072,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 		v->compressType = multisteps->compressionType;
 		v = v->next;
 	}
+	free(sz_tsc->bit_array);
 
 	//v = vset->header->next;
 #if 0
