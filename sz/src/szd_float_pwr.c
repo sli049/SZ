@@ -1395,8 +1395,8 @@ void decompressDataSeries_float_1D_pwr_pre_log_hist_invlog(float** data, size_t 
 	}
 	if (vlct == 1){
 		memcpy(multisteps->hist_invlog_data, (*data), dataSeriesLength*sizeof(float));//only for vlct == 1;
-		printf("Snapshot: history the inv log data to hist_invlog_data.\n");
-		printf("so, use it directly to decompress position; use its log data (hist_data) to decompress velocity.\n");
+	//	printf("Snapshot: history the inv log data to hist_invlog_data.\n");
+	//	printf("so, use it directly to decompress position; use its log data (hist_data) to decompress velocity.\n");
 	}
 }
 
@@ -1433,8 +1433,8 @@ void decompressDataSeries_float_1D_pwr_pre_log_ts(float** data, size_t dataSerie
 	}
 	if (vlct == 1){
 		memcpy(multisteps->hist_invlog_data, (*data), dataSeriesLength*sizeof(float));//only for vlct == 1;
-		printf("Time-based: history the inv log data to hist_invlog_data.\n");
-		printf("so, use it directly to decompress position; use its log data to decompress velocity.\n");
+//		printf("Time-based: history the inv log data to hist_invlog_data.\n");
+//		printf("so, use it directly to decompress position; use its log data to decompress velocity.\n");
 	}
 
 }

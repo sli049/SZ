@@ -186,7 +186,7 @@ double realPrecision, float valueRangeSize, float medianValue_f)
 		decData[i] = vce->data;
 	}//end of for
 
-	printf("after doing compression, the loop iterations, data length are: %zu, %zu\n", i, dataLength);
+	//printf("after doing compression, the loop iterations, data length are: %zu, %zu\n", i, dataLength);
 		
 	size_t exactDataNum = exactLeadNumArray->size;
 	
@@ -369,7 +369,7 @@ double realPrecision, float valueRangeSize, float medianValue_f, unsigned char* 
 		
 	}//end of for
 
-	printf("after doing compression, the loop iterations, data length are: %zu, %zu\n", i, dataLength);
+	//printf("after doing compression, the loop iterations, data length are: %zu, %zu\n", i, dataLength);
 		
 	size_t exactDataNum = exactLeadNumArray->size;
 	
@@ -524,7 +524,7 @@ double realPrecision, float valueRangeSize, float medianValue_f, unsigned char* 
 		decData[i] = vce->data;
 	}//end of for
 
-	printf("after doing compression, the loop iterations, data length are: %zu, %zu\n", i, dataLength);
+	//printf("after doing compression, the loop iterations, data length are: %zu, %zu\n", i, dataLength);
 		
 	size_t exactDataNum = exactLeadNumArray->size;
 	
@@ -562,21 +562,21 @@ double realPrecision, float valueRangeSize, float medianValue_f)
 	SZ_Variable* v_tmp = NULL;
 	v_tmp = sz_varset->header->next;
 	if (!strcmp(v_global->varName, "x")){
-		printf("vlct find vx for x\n");
+		//printf("vlct find vx for x\n");
 		while(strcmp(v_tmp->varName, "vx")) {v_tmp = v_tmp->next;}
-		printf("found varible name: %s\n", v_tmp->varName);
+		//printf("found varible name: %s\n", v_tmp->varName);
 	}
 	else if (!strcmp(v_global->varName, "y")){
-		printf("vlct find vy for y\n");
+		//printf("vlct find vy for y\n");
 		while(strcmp(v_tmp->varName, "vy")) {v_tmp = v_tmp->next;}
-		printf("found varible name: %s\n", v_tmp->varName);
+		//printf("found varible name: %s\n", v_tmp->varName);
 	}
 	else if (!strcmp(v_global->varName, "z")){
-		printf("vlct find vz for z\n");
+		//printf("vlct find vz for z\n");
 		while(strcmp(v_tmp->varName, "vz")) {v_tmp = v_tmp->next;}
-		printf("found varible name: %s\n", v_tmp->varName);
+		//printf("found varible name: %s\n", v_tmp->varName);
 	}
-	else printf("!!!!!!!!Should not call SZ_compress_float_1D_MDQ_ts_vlct, instead consider SZ_compress_float_1D_MDQ_ts!!!!!\n");
+	//else printf("!!!!!!!!Should not call SZ_compress_float_1D_MDQ_ts_vlct, instead consider SZ_compress_float_1D_MDQ_ts!!!!!\n");
 
 	float* preStepData_vol = NULL;
 	if(v_tmp->errBoundMode == PW_REL) preStepData_vol = (float*)(v_tmp->multisteps->hist_invlog_data);
@@ -705,7 +705,7 @@ double realPrecision, float valueRangeSize, float medianValue_f)
 		decData[i] = vce->data;
 	}//end of for
 
-	printf("after doing compression, the loop iterations, data length are: %zu, %zu\n", i, dataLength);
+	//printf("after doing compression, the loop iterations, data length are: %zu, %zu\n", i, dataLength);
 		
 	size_t exactDataNum = exactLeadNumArray->size;
 	

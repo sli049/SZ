@@ -91,14 +91,14 @@ size_t intersectAndsort(int64_t* preIndex, size_t preLen, SZ_VarSet* curVar, siz
 	for (i = 0; i < preLen; i++)
 		bitarray[i] = '0';
 	//sihuan debug:intersection size is 0 for some snapshot
-	printf("Pre ID: \n");
-	for (i = 0; i < 10; i++)
-		printf("%zu ", preIndex[i]);
-	printf("\n");
-	printf("Cur ID: \n");
-	for (i = 0; i < 10; i++)
-		printf("%zu ", ((int64_t*)v[6]->data)[i]);
-	printf("\n");
+//	printf("Pre ID: \n");
+	//for (i = 0; i < 10; i++)
+//		printf("%zu ", preIndex[i]);
+//	printf("\n");
+//	printf("Cur ID: \n");
+	//for (i = 0; i < 10; i++)
+//		printf("%zu ", ((int64_t*)v[6]->data)[i]);
+//	printf("\n");
 	i = 0;
 	
 	while(i < preLen && j < dataLen){
@@ -122,7 +122,7 @@ size_t intersectAndsort(int64_t* preIndex, size_t preLen, SZ_VarSet* curVar, siz
 		}
 		else j++;
 	}
-	printf("intersect count is: %zu, i j k pre curlen is: %zu, %zu, %zu, %zu, %zu\n\n", cnt, i, j, k, preLen, dataLen);
+//	printf("intersect count is: %zu, i j k pre curlen is: %zu, %zu, %zu, %zu, %zu\n\n", cnt, i, j, k, preLen, dataLen);
 	return cnt;
 }
 
@@ -160,6 +160,6 @@ float calculate_delta_t(size_t size){
 		denom += vx0[j] * (x1[i] - x0[j]);
 		div   += vx0[j] * vx0[j];
 	}
-	printf("the calculated delta_t is: %.10f\n", denom/div);
+//	printf("the calculated delta_t is: %.10f\n", denom/div);
 	return denom/div;
 }

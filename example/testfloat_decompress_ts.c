@@ -55,6 +55,7 @@ int main(int argc, char * argv[])
     }
   
     sprintf(outputDir, "%s", argv[1]);
+	sprintf(global_dir, "%s", argv[1]);
     if(strcmp(outputDir, "sz.config")==0)
     {
     	printf("Error: wrong input\n");
@@ -151,6 +152,7 @@ int main(int argc, char * argv[])
         }
 	//	free(bytes);
 	}
+	printf("GREPdec time is: %f\n", all_snap_time);
 	sprintf(outputFilePath, "%s/decmpr_total_snap_time_%f_%f.txt", outputDir, eb, eb2);
 	writeDoubleData(&all_snap_time, 1, outputFilePath, &status);//sihuan added
 

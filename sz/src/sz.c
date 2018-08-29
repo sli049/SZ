@@ -29,6 +29,7 @@ int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 //int SZ_SIZE_TYPE = 8;
 //sihuan added: extra memory
 int mem_over = 10;
+char global_dir[600] = ".";
 //int start_offset = 0; //sihuan added
 //float delta_t_opt[100] = {3.4630957287598745e-05, 5.2311700705000656e-05, 3.5391612072822954e-05, 5.3441990932428505e-05, 5.4088709466407214e-05};
 float delta_t_opt[100] = {0.0};
@@ -917,7 +918,7 @@ int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_interval)
 {
 	//vlct = 1;
-	printf("the setted vlct is: %d\n", vlct);
+	//printf("the setted vlct is: %d\n", vlct);
 	TheCurVarNum = -1; //sihuan: finishing a snapshot should reset the var number.
 	confparams_cpr->szMode = SZ_TEMPORAL_COMPRESSION;
 	confparams_cpr->predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
@@ -925,7 +926,9 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 	SZ_VarSet* vset = sz_varset;
 	size_t *outSize_ = (size_t*)malloc(sizeof(size_t)*vset->count);
 	memset(outSize_, 0, sizeof(size_t)*vset->count);
-	unsigned char** compressBuffer = (unsigned char**)malloc(vset->count*sizeof(unsigned char*));//to store compressed bytes
+	//unsigned char** compressBuffer = (unsigned char**)malloc(vset->count*sizeof(unsigned char*));//to store compressed bytes
+	//sihuan correct the number of compressBuffer
+	unsigned char** compressBuffer = (unsigned char**)malloc((vset->count-1)*sizeof(unsigned char*));//to store compressed bytes
 	
 	char *metadata_str = (char*)malloc(vset->count*256);
 	memset(metadata_str, 0, vset->count*256);
@@ -937,7 +940,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 	start = clock();
 	reorder_vars(vset);//sihuan added
 	end = clock();
-	printf("sorting the id, swapping variables time: %.5f\n", (double)(end-start)/CLOCKS_PER_SEC);
+	//printf("sorting the id, swapping variables time: %.5f\n", (double)(end-start)/CLOCKS_PER_SEC);
 
 	size_t preLen = sz_tsc->intersect_size;
 	v = vset->header->next;
@@ -946,11 +949,11 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 	size_t cur_intersect_size;
 	confparams_cpr->snapshotCmprStep = Snap_interval;
 	//#if 0
-	printf("confparams_cpr->snapshotCmprStep is %d\n", confparams_cpr->snapshotCmprStep);
+	//printf("confparams_cpr->snapshotCmprStep is %d\n", confparams_cpr->snapshotCmprStep);
 	if (sz_tsc->currentStep % confparams_cpr->snapshotCmprStep == 0){
 		cur_intersect_size = dataLen;
 		//sihuan added: should write the reordered input for later decompression validation
-		write_reordered_tofile(vset, dataLen);
+	//	write_reordered_tofile(vset, dataLen);
 
 		int64_t* tmp_hist_index = (int64_t*) malloc(sizeof(int64_t)*cur_intersect_size);
 		v = vset->header->next;
@@ -959,7 +962,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 		memcpy(sz_tsc->hist_index, (int64_t*)v->data, sizeof(int64_t)*cur_intersect_size);
 	}
 	else {
-		printf("prelen, dataLen before calling intersect: %zu, %zu\n", preLen, dataLen);
+		//printf("prelen, dataLen before calling intersect: %zu, %zu\n", preLen, dataLen);
 		unsigned char* tmp_bitarray = (unsigned char*) malloc(sizeof(unsigned char)*preLen);
 		sz_tsc->bit_array = tmp_bitarray;
 		cur_intersect_size = intersectAndsort(sz_tsc->hist_index, preLen, vset, dataLen, sz_tsc->bit_array);
@@ -968,10 +971,10 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 		//sihuan comment: the delta t should be written to an output file for furhter decompression; otherwise,
 		//the delta t used in compress and decompress are different; thus error is not bounded
 		//sihuan added: should write the reordered input for later decompression validation
-		write_reordered_tofile(vset, dataLen);
+	//	write_reordered_tofile(vset, dataLen);
 		//now write the bitarray to an output file
 		char bitarr_out_name[50];
-		sprintf(bitarr_out_name, "bitarray_out_sz_%d.sz1", sz_tsc->currentStep);
+		sprintf(bitarr_out_name, "%s/bitarray_out_sz_%d.sz1", global_dir, sz_tsc->currentStep);
 		unsigned char* bit_array_zlib_cmprs;
 		unsigned long bit_array_zlib_cmprs_length = zlib_compress(sz_tsc->bit_array, preLen, &bit_array_zlib_cmprs, 1);
 		unsigned char* bit_array_zlib_cmprs_meta = (unsigned char*) malloc(bit_array_zlib_cmprs_length + sizeof(size_t) + sizeof(unsigned long));
@@ -1072,7 +1075,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 		v->compressType = multisteps->compressionType;
 		v = v->next;
 	}
-	free(sz_tsc->bit_array);
+	if (sz_tsc->currentStep%confparams_cpr->snapshotCmprStep != 0)	free(sz_tsc->bit_array);
 
 	//v = vset->header->next;
 #if 0
@@ -1158,7 +1161,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 	p += sizeof(size_t);//sihuan added
 	sizeToBytes(p, vset->header->next->r1);//sihuan added:current step input dimension
 	p += sizeof(size_t);//sihuan added
-	printf("the compressed current step r1 is: %zu\n", vset->header->next->r1);
+	//printf("the compressed current step r1 is: %zu\n", vset->header->next->r1);
 	
 	//for(i=0;i<vset->count;i++)
 	for(i=0;i<vset->count-1;i++)//sihuan updated: subtract the id variable: so vset->count-1;
@@ -1170,7 +1173,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 		//sihuan debug
 		*p = (unsigned char)multisteps->compressionType;//sihuan debug
 		//printf("the current varialbe written compression type is: %d", v->compressType);
-		printf("the current varialbe written compression type is: %d", multisteps->compressionType);
+		//printf("the current varialbe written compression type is: %d", multisteps->compressionType);
 		p++;
 		*p = (unsigned char)v->dataType; //1 byte
 		p++;
@@ -1191,18 +1194,23 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 		v = v->next; //sihuan corrected?
 		//free(compressBuffer[i]); //do we need to free it here? why cannot free it?
 	}
+	//sihuan free compressBuffer
+	for (i = 0; i < vset->count-1; i++){
+		free(compressBuffer[vset->count-2-i]);
+	}
+	free(compressBuffer);
 
 	//sihuan output size print
-	printf("***********************printing results********************\n");
+	//printf("***********************printing results********************\n");
 	for (i = 0; i < vset->count - 1; i++)
-		printf("variable %d has compressed size: %zu, compression ratio: %.5f\n", i, outSize_[i], (float)(dataLen*sizeof(float))/(float)outSize_[i]);
+		//printf("variable %d has compressed size: %zu, compression ratio: %.5f\n", i, outSize_[i], (float)(dataLen*sizeof(float))/(float)outSize_[i]);
 	
 	cmp_ratio[sz_tsc->currentStep] = (float)(dataLen*sizeof(float)*(vset->count-1))/(float)(*outSize);
 	for (i = 0; i < vset->count - 1; i++)
 		bit_rate[i] += (double)outSize_[i]/(double)(dataLen*sizeof(float))*32.0;
-	printf("updating bit_rate\n"); 
-	printf("the overall compression ratio for this step is: %.5f\n",cmp_ratio[sz_tsc->currentStep]);
-	printf("***********************ending printing*********************\n");
+	//printf("updating bit_rate\n"); 
+	//printf("the overall compression ratio for this step is: %.5f\n",cmp_ratio[sz_tsc->currentStep]);
+	//printf("***********************ending printing*********************\n");
 
 
 
@@ -1288,7 +1296,7 @@ void SZ_decompress_ts(unsigned char *bytes, size_t byteLength)
 
 void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 {
-	printf("the setted vlct is: %d\n", vlct);
+	//printf("the setted vlct is: %d\n", vlct);
 	TheCurVarNum = -1; //each time call this function, this global var should be reset
 	if(confparams_dec==NULL)
 		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
@@ -1312,17 +1320,17 @@ void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 	unsigned char* q = bytes;
 	sz_tsc->currentStep = bytesToInt_bigEndian(q); 
 	//sihuan debug
-	printf("currentStep is %d\n", sz_tsc->currentStep);
+	//printf("currentStep is %d\n", sz_tsc->currentStep);
 	q += 4;
 	unsigned short nbVars = (unsigned short)bytesToShort(q);
-	printf("number of variables is %hu\n", nbVars);//sihuan debug
+	//printf("number of variables is %hu\n", nbVars);//sihuan debug
 	q += 2;
 	size_t intersection_size = bytesToSize(q);
 	q += sizeof(size_t);
-	printf("the current step intersection_size is: %zu\n", intersection_size);
+	//printf("the current step intersection_size is: %zu\n", intersection_size);
 	r1 = bytesToSize(q);
 	q += sizeof(size_t);
-	printf("the current step r1 is: %zu\n", r1);
+	//printf("the current step r1 is: %zu\n", r1);
 	
 	if(nbVars != sz_varset->count)
 	{
@@ -1349,10 +1357,10 @@ void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 		size_t dataLen = computeDataLength(r5, r4, r3, r2, r1);		
 		multisteps->compressionType = *(q++);
 		//sihuan debug
-		printf("the decompressed compresion type is %d\n", multisteps->compressionType);
+		//printf("the decompressed compresion type is %d\n", multisteps->compressionType);
 		unsigned char dataType = *(q++);
 		//sihuan debug
-		printf("the decompressed data type is %d\n", SZ_FLOAT);
+		//printf("the decompressed data type is %d\n", SZ_FLOAT);
 		size_t cmpSize = bytesToSize(q);
 		q += sizeof(size_t);
 		unsigned char* cmpBytes = q;
@@ -1371,14 +1379,14 @@ void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 					float* newFloatData1 = NULL;
 					float* newFloatData2 = NULL;
 					SZ_decompress_args_float_ps(&newFloatData1, r5, r4, r3, r2, r1, cmpBytes+sizeof(size_t), tmp_cmpSize1, 1, intersection_size);
-					printf("finish the first decompression phase\n");
+					//printf("finish the first decompression phase\n");
 					//cmpBytes += tmp_cmpSize;
 					size_t tmp_cmpSize2 = cmpSize - tmp_cmpSize1 - sizeof(size_t);
 					unsigned char* cmp_tmp_ = (unsigned char*)malloc(tmp_cmpSize2);
 					memcpy(cmp_tmp_, cmpBytes+sizeof(size_t)+tmp_cmpSize1, tmp_cmpSize2);
 					SZ_decompress_args_float_ps(&newFloatData2, r5, r4, r3, r2, r1, cmpBytes+sizeof(size_t)+tmp_cmpSize1, tmp_cmpSize2, 2, dataLen - intersection_size);
 					//SZ_decompress_args_float_ps(&newFloatData2, r5, r4, r3, r2, r1, cmp_tmp_, tmp_cmpSize2, 2, dataLen - intersection_size);
-					printf("finish the second decompression phase\n");
+					//printf("finish the second decompression phase\n");
 					//q += tmp_cmpSize;
 					memcpy(p->data, newFloatData1, intersection_size*sizeof(float));
 					memcpy(p->data+intersection_size*sizeof(float), newFloatData2, (dataLen-intersection_size)*sizeof(float));

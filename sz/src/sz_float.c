@@ -962,7 +962,7 @@ size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, 
 	//sihuan debug:
 	if(*outSize>dataLength*sizeof(float)){
 		SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
-		printf("this step: %d use lossless compression!!!\n", sz_tsc->currentStep);
+	//	printf("this step: %d use lossless compression!!!\n", sz_tsc->currentStep);
 	}
 	
 	free_TightDataPointStorageF(tdps);
@@ -2381,7 +2381,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 //		dataLength = dataLength - sz_tsc->intersect_size;
 //		oriData = oriData + sz_tsc->intersect_size*sizeof(float);
 //	}
-	printf("cur data length is: %zu\n", dataLength);
+//	printf("cur data length is: %zu\n", dataLength);
 	
 	if(dataLength <= MIN_NUM_OF_ELEMENTS)
 	{
@@ -2417,7 +2417,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
 			{
-				printf("entering PW_REL; phase: %d\n", phase);
+				//printf("entering PW_REL; phase: %d\n", phase);
 				if (phase == 1)
 					SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log_ps(&tmpByteData, oriData, pwRelBoundRatio, sz_tsc->intersect_size, &tmpOutSize, min, max, 1);
 				//SZ_compress_args_float_NoCkRngeNoGzip_1D_pwrgroup(&tmpByteData, oriData, r1, absErr_Bound, relBoundRatio, pwRelBoundRatio, valueRangeSize, medianValue, &tmpOutSize);
@@ -2429,7 +2429,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION){
-					printf("entering VR_REL; phase: %d\n", phase);
+					//printf("entering VR_REL; phase: %d\n", phase);
 					if (phase == 1)
 					//multisteps->compressionType = SZ_compress_args_float_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 
@@ -2512,7 +2512,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		else if(confparams_cpr->szMode==SZ_BEST_COMPRESSION || confparams_cpr->szMode==SZ_DEFAULT_COMPRESSION || confparams_cpr->szMode==SZ_TEMPORAL_COMPRESSION)
 		{
 			*outSize = zlib_compress5(tmpByteData, tmpOutSize, newByteData, confparams_cpr->gzipMode);
-			printf("!!!!!!!!compress: cmpSize:%zu, targetUncompressSize: %zu\n", *outSize,tmpOutSize );
+			//printf("!!!!!!!!compress: cmpSize:%zu, targetUncompressSize: %zu\n", *outSize,tmpOutSize );
 			free(tmpByteData);
 		}
 		else

@@ -58,6 +58,7 @@ int main(int argc, char * argv[])
    
     cfgFile=argv[1];
     sprintf(oriDir, "%s", argv[2]);//add a comment to test github
+	sprintf(global_dir, "%s", argv[2]);//redirect bit array
 	int i_start = 0;
 	int i_end = 100;
 	int Snap_interval = 10;
@@ -127,6 +128,7 @@ int main(int argc, char * argv[])
    
     size_t outSize; 
     unsigned char *bytes = NULL;
+	//printf("changes made\n");
     for(i=i_start;i<i_end;i++)
 	{
 		printf("simulation time step %d\n", i);
@@ -192,10 +194,11 @@ int main(int argc, char * argv[])
     printf("The overall compration for 6 steps is: %.5f\n", 6.0/overall_cmp_ratio);
     
     printf("done\n");
-	printf("total time is: %f \n", all_snap_time[0]);
+	printf("GREPcmpr total time is: %f\n", all_snap_time[0]);
 	for (i = 0; i < NB_variable; i++){
-		free(data[i]);}
+		free(data[NB_variable-1-i]);}
     free(data);
+	free(index);
     SZ_Finalize();
     
     return 0;

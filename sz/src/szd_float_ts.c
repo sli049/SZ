@@ -52,8 +52,8 @@ void decompressDataSeries_float_1D_ts(float** data, size_t dataSeriesLength, sz_
 	medianValue = tdps->medianValue;
 
 	//now decompress the bitarray and use it to do decompression(this should be optimized to execute for one step while not one varialble);
-	char bit_file_name[50];
-	sprintf(bit_file_name, "bitarray_out_sz_%d.sz1", sz_tsc->currentStep);
+	char bit_file_name[600];
+	sprintf(bit_file_name, "%s/bitarray_out_sz_%d.sz1",global_dir, sz_tsc->currentStep);
 	size_t byteLength_tmp;
 	int status_tmp;
 	unsigned char* bit_read = readByteData(bit_file_name, &byteLength_tmp, &status_tmp);
@@ -62,10 +62,10 @@ void decompressDataSeries_float_1D_ts(float** data, size_t dataSeriesLength, sz_
 	unsigned long cmpSize = (unsigned long) bytesToLong_bigEndian(bit_read);;
 	bit_read += sizeof(unsigned long);
 
-	if(cmpSize == byteLength_tmp - sizeof(size_t) - sizeof(unsigned long))
-		printf("the two zlib compuression size match\n");
-	else
-		printf("the two zlib compression size DON'T match\n");
+//	if(cmpSize == byteLength_tmp - sizeof(size_t) - sizeof(unsigned long))
+	//	printf("the two zlib compuression size match\n");
+//	else
+	//	printf("the two zlib compression size DON'T match\n");
 
 	unsigned char* dec_bit_arr = (unsigned char*) malloc(sizeof(unsigned char) * oriSize);
 	zlib_uncompress(bit_read, cmpSize, &dec_bit_arr, oriSize);
@@ -150,21 +150,21 @@ void decompressDataSeries_float_1D_ts_vlct(float** data, size_t dataSeriesLength
 	SZ_Variable* v_tmp = NULL;
 	v_tmp = sz_varset->header->next;
 	if (!strcmp(v_global->varName, "x")){
-		printf("vlct find vx for x\n");
+	//	printf("vlct find vx for x\n");
 		while(strcmp(v_tmp->varName, "vx")) {v_tmp = v_tmp->next;}
-		printf("found varible name: %s\n", v_tmp->varName);
+	//	printf("found varible name: %s\n", v_tmp->varName);
 	}
 	else if (!strcmp(v_global->varName, "y")){
-		printf("vlct find vy for y\n");
+	//	printf("vlct find vy for y\n");
 		while(strcmp(v_tmp->varName, "vy")) {v_tmp = v_tmp->next;}
-		printf("found varible name: %s\n", v_tmp->varName);
+	//	printf("found varible name: %s\n", v_tmp->varName);
 	}
 	else if (!strcmp(v_global->varName, "z")){
-		printf("vlct find vz for z\n");
+	//	printf("vlct find vz for z\n");
 		while(strcmp(v_tmp->varName, "vz")) {v_tmp = v_tmp->next;}
-		printf("found varible name: %s\n", v_tmp->varName);
+	//	printf("found varible name: %s\n", v_tmp->varName);
 	}
-	else printf("!!!!!!!!Should not call SZ_compress_float_1D_MDQ_ts_vlct, instead consider SZ_compress_float_1D_MDQ_ts!!!!!\n");
+	//else printf("!!!!!!!!Should not call SZ_compress_float_1D_MDQ_ts_vlct, instead consider SZ_compress_float_1D_MDQ_ts!!!!!\n");
 
 	float* lastSnapshotData_vol = NULL;
 	if (v_tmp->errBoundMode == PW_REL)
@@ -206,8 +206,8 @@ void decompressDataSeries_float_1D_ts_vlct(float** data, size_t dataSeriesLength
 	medianValue = tdps->medianValue;
 
 	//now decompress the bitarray and use it to do decompression(this should be optimized to execute for one step while not one varialble);
-	char bit_file_name[50];
-	sprintf(bit_file_name, "bitarray_out_sz_%d.sz1", sz_tsc->currentStep);
+	char bit_file_name[600];
+	sprintf(bit_file_name, "%s/bitarray_out_sz_%d.sz1",global_dir, sz_tsc->currentStep);
 	size_t byteLength_tmp;
 	int status_tmp;
 	unsigned char* bit_read = readByteData(bit_file_name, &byteLength_tmp, &status_tmp);
@@ -216,10 +216,10 @@ void decompressDataSeries_float_1D_ts_vlct(float** data, size_t dataSeriesLength
 	unsigned long cmpSize = (unsigned long) bytesToLong_bigEndian(bit_read);;
 	bit_read += sizeof(unsigned long);
 
-	if(cmpSize == byteLength_tmp - sizeof(size_t) - sizeof(unsigned long))
-		printf("the two zlib compuression size match\n");
-	else
-		printf("the two zlib compression size DON'T match\n");
+//	if(cmpSize == byteLength_tmp - sizeof(size_t) - sizeof(unsigned long))
+	//	printf("the two zlib compuression size match\n");
+//	else
+	//	printf("the two zlib compression size DON'T match\n");
 
 	unsigned char* dec_bit_arr = (unsigned char*) malloc(sizeof(unsigned char) * oriSize);
 	zlib_uncompress(bit_read, cmpSize, &dec_bit_arr, oriSize);
