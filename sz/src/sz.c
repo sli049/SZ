@@ -953,7 +953,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 	if (sz_tsc->currentStep % confparams_cpr->snapshotCmprStep == 0){
 		cur_intersect_size = dataLen;
 		//sihuan added: should write the reordered input for later decompression validation
-	//	write_reordered_tofile(vset, dataLen);
+		write_reordered_tofile(vset, dataLen);
 
 		int64_t* tmp_hist_index = (int64_t*) malloc(sizeof(int64_t)*cur_intersect_size);
 		v = vset->header->next;
@@ -971,7 +971,7 @@ int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize, int Snap_i
 		//sihuan comment: the delta t should be written to an output file for furhter decompression; otherwise,
 		//the delta t used in compress and decompress are different; thus error is not bounded
 		//sihuan added: should write the reordered input for later decompression validation
-	//	write_reordered_tofile(vset, dataLen);
+		write_reordered_tofile(vset, dataLen);
 		//now write the bitarray to an output file
 		char bitarr_out_name[50];
 		sprintf(bitarr_out_name, "%s/bitarray_out_sz_%d.sz1", global_dir, sz_tsc->currentStep);
@@ -1382,8 +1382,8 @@ void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 					//printf("finish the first decompression phase\n");
 					//cmpBytes += tmp_cmpSize;
 					size_t tmp_cmpSize2 = cmpSize - tmp_cmpSize1 - sizeof(size_t);
-					unsigned char* cmp_tmp_ = (unsigned char*)malloc(tmp_cmpSize2);
-					memcpy(cmp_tmp_, cmpBytes+sizeof(size_t)+tmp_cmpSize1, tmp_cmpSize2);
+				//	unsigned char* cmp_tmp_ = (unsigned char*)malloc(tmp_cmpSize2);
+				//	memcpy(cmp_tmp_, cmpBytes+sizeof(size_t)+tmp_cmpSize1, tmp_cmpSize2);
 					SZ_decompress_args_float_ps(&newFloatData2, r5, r4, r3, r2, r1, cmpBytes+sizeof(size_t)+tmp_cmpSize1, tmp_cmpSize2, 2, dataLen - intersection_size);
 					//SZ_decompress_args_float_ps(&newFloatData2, r5, r4, r3, r2, r1, cmp_tmp_, tmp_cmpSize2, 2, dataLen - intersection_size);
 					//printf("finish the second decompression phase\n");
@@ -1391,7 +1391,7 @@ void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength)
 					memcpy(p->data, newFloatData1, intersection_size*sizeof(float));
 					memcpy(p->data+intersection_size*sizeof(float), newFloatData2, (dataLen-intersection_size)*sizeof(float));
 					free(newFloatData1);
-					//free(newFloatData2);
+					free(newFloatData2);
 					q += cmpSize;
 				}
 				else printf("Only snapshot, time or spatial-time decompression types are supported.\n");

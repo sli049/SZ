@@ -139,6 +139,8 @@ void decompressDataSeries_float_1D_ts(float** data, size_t dataSeriesLength, sz_
 	
 	free(leadNum);
 	free(type);
+	//sihuan added: mem leak fix
+	free(dec_bit_arr);
 	return;
 }
 
@@ -294,5 +296,7 @@ void decompressDataSeries_float_1D_ts_vlct(float** data, size_t dataSeriesLength
 	
 	free(leadNum);
 	free(type);
+	//sihuan added: mem leak fix
+	free(dec_bit_arr);
 	return;
 }

@@ -158,6 +158,9 @@ int main(int argc, char * argv[])
 
     
     printf("done\n");
+	for (i = 0; i < NB_variable; i++){
+		free(data[NB_variable-1-i]);
+	}
     free(data);
     SZ_Finalize();
     
